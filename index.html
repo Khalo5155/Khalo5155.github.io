@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Display</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+<textarea id="markdownTextArea" style="width: 100%; height: 200px;">
+# 标题
+
+这是一个段落。
+
+- 列表项一
+- 列表项二
+
+**粗体文本**
+
+[链接](https://example.com)
+</textarea>
+    <button onclick="convertMarkdownToHTML()">Convert to HTML</button>
+    <div id="markdownDisplay"></div>
+    
+    <script>
+        function convertMarkdownToHTML() {
+            var rawMarkdown = document.getElementById('markdownTextArea').value;
+            var processedHTML = marked.parse(rawMarkdown);
+            document.getElementById('markdownDisplay').innerHTML = processedHTML;
+        }
+    </script>
+</body>
+</html>
