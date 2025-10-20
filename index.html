@@ -1,37 +1,641 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Markdown Display</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <title>TechTrio - 人机交互项目</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .team-name {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+        
+        nav {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin: 0;
+        }
+        
+        .nav-links a {
+            display: block;
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            background-color: #f0f0f0;
+            color: #2575fc;
+        }
+        
+        section {
+            padding: 4rem 0;
+            background-color: white;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: #2575fc;
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+        }
+        
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .project-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+        
+        .highlight-box {
+            background-color: #f0f7ff;
+            border-left: 4px solid #2575fc;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .data-plan {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .plan-card {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #6a11cb;
+        }
+        
+        .plan-card h3 {
+            color: #6a11cb;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .plan-card h3 i {
+            margin-right: 0.5rem;
+        }
+        
+        .plan-card ul {
+            list-style-position: inside;
+            margin-left: 1rem;
+        }
+        
+        .plan-card li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .interview-item, .survey-item {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #2575fc;
+        }
+        
+        .interview-item h3, .survey-item h3 {
+            color: #2575fc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .interview-meta, .survey-meta {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .interview-content, .survey-content {
+            margin-top: 1rem;
+        }
+        
+        .interview-question {
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        
+        .interview-answer {
+            margin-left: 1rem;
+            color: #555;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background-color: #f0f7ff;
+            color: #2575fc;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .contributors {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .contributor-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .contributor-group h3 {
+            margin-bottom: 1rem;
+            color: #6a11cb;
+        }
+        
+        .contributor-group ul {
+            list-style: none;
+        }
+        
+        .contributor-group li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+            }
+            
+            .data-plan {
+                flex-direction: column;
+            }
+            
+            .plan-card {
+                min-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-<textarea id="markdownTextArea" style="width: 100%; height: 200px; display: none;">
-# 山东大学云计算技术实验三：个人博客搭建
-
-### 实验介绍：
-<p> 构建环境并实现个人博客/网站的搭建，撰写实验报告，并将这份报告作为一篇博文发布在自己的博客 / 网站上。<\p>
+    <header>
+        <div class="container">
+            <h1 class="team-name">TechTrio</h1>
+            <p class="project-title">人机交互实验课作业 - 项目网站</p>
+            <p>创新交互设计，优化用户体验</p>
+        </div>
+    </header>
     
+    <nav>
+        <div class="nav-container">
+            <ul class="nav-links">
+                <li><a href="#main-info">主要信息</a></li>
+                <li><a href="#project-proposal">项目提案</a></li>
+                <li><a href="#data-collection">数据收集计划</a></li>
+                <li><a href="#interview-data">访谈数据</a></li>
+                <li><a href="#survey-data">问卷调查</a></li>
+            </ul>
+        </div>
+    </nav>
     
-### 搭建步骤：
-<p> 本次个人博客搭建参考教程：[使用Github做一个完全免费的个人网站(步骤很细)](https://zhuanlan.zhihu.com/p/91652100) <\p>
+    <main class="container">
+        <section id="main-info">
+            <h2 class="section-title">主要信息</h2>
+            <div class="content">
+                <p class="project-description">
+                    TechTrio是一个致力于改善人机交互体验的创新项目。我们专注于设计直观、高效且愉悦的用户界面，
+                    通过深入研究用户需求和行为模式，创造出真正满足用户期望的数字产品。
+                </p>
+                
+                <div class="highlight-box">
+                    <h3>项目目标</h3>
+                    <p>我们的目标是开发一个能够显著提升用户生产力与满意度的交互系统，通过智能化的界面设计和个性化的用户体验，解决当前数字产品中存在的交互痛点。</p>
+                </div>
+                
+                <div class="highlight-box">
+                    <h3>项目价值</h3>
+                    <p>通过优化人机交互流程，我们的项目有望减少用户操作时间，降低学习成本，提高任务完成效率，并为用户带来更加愉悦的数字体验。</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="project-proposal">
+            <h2 class="section-title">项目提案</h2>
+            <div class="content">
+                <p class="project-description">
+                    在当今数字化时代，用户与计算机系统的交互方式直接影响着工作效率和用户体验。
+                    然而，许多现有系统存在交互复杂、学习曲线陡峭、功能隐藏过深等问题，导致用户无法充分利用系统功能。
+                </p>
+                
+                <h3>问题陈述</h3>
+                <p>当前许多软件和应用程序存在以下交互问题：</p>
+                <ul>
+                    <li>功能菜单结构复杂，用户难以找到所需功能</li>
+                    <li>操作流程冗长，完成简单任务需要多次点击</li>
+                    <li>缺乏个性化设置，无法适应不同用户的使用习惯</li>
+                    <li>反馈机制不明确，用户操作后缺乏及时有效的反馈</li>
+                </ul>
+                
+                <h3>解决方案</h3>
+                <p>我们提出以下解决方案：</p>
+                <ul>
+                    <li>设计智能上下文菜单，根据用户当前任务动态调整可用功能</li>
+                    <li>实现手势控制和语音命令等多元交互方式</li>
+                    <li>开发个性化界面自适应系统，学习用户习惯并优化界面布局</li>
+                    <li>引入丰富的视觉和听觉反馈，增强用户的控制感和满意度</li>
+                </ul>
+                
+                <h3>预期成果</h3>
+                <p>通过实施上述解决方案，我们预期能够：</p>
+                <ul>
+                    <li>将常见任务完成时间缩短30%以上</li>
+                    <li>将新用户学习曲线减少50%</li>
+                    <li>提高用户满意度评分至4.5/5以上</li>
+                    <li>降低用户操作错误率</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section id="data-collection">
+            <h2 class="section-title">数据收集计划</h2>
+            <div class="content">
+                <p class="project-description">
+                    为了深入了解用户需求和使用习惯，我们制定了详细的数据收集计划，包括定性研究的用户访谈和定量研究的问卷调查。
+                </p>
+                
+                <div class="data-plan">
+                    <div class="plan-card">
+                        <h3>用户访谈计划</h3>
+                        <ul>
+                            <li>目标受访者：4位潜在用户（3位用于TechTrio，1位用于TrafficTighten）</li>
+                            <li>访谈形式：半结构化访谈，允许即兴追问</li>
+                            <li>访谈时长：每场约30-45分钟</li>
+                            <li>主要话题：
+                                <ul>
+                                    <li>当前使用类似产品的体验和痛点</li>
+                                    <li>对新交互方式的接受度和期望</li>
+                                    <li>个性化功能的需求和偏好</li>
+                                </ul>
+                            </li>
+                            <li>数据记录：录音+笔记，后期整理为文字稿</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="plan-card">
+                        <h3>问卷调查计划</h3>
+                        <ul>
+                            <li>目标样本：至少10位潜在用户</li>
+                            <li>调查方式：在线问卷</li>
+                            <li>问卷内容：
+                                <ul>
+                                    <li>用户基本信息和使用习惯</li>
+                                    <li>对现有交互方式的满意度评价</li>
+                                    <li>对新功能需求的优先级排序</li>
+                                    <li>界面设计偏好调查</li>
+                                </ul>
+                            </li>
+                            <li>数据分析：使用统计方法分析结果，识别关键需求和趋势</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight-box">
+                    <h3>数据收集时间表</h3>
+                    <p><strong>第一周：</strong> 准备访谈提纲和问卷设计</p>
+                    <p><strong>第二周：</strong> 进行用户访谈并整理记录</p>
+                    <p><strong>第三周：</strong> 发放并收集问卷数据</p>
+                    <p><strong>第四周：</strong> 数据分析与报告撰写</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="interview-data">
+            <h2 class="section-title">访谈数据</h2>
+            <div class="content">
+                <p class="project-description">
+                    以下是部分用户访谈的摘要和关键发现。完整访谈记录可在提交的PDF文档中查看。
+                </p>
+                
+                <div class="interview-item">
+                    <h3>访谈 #1: 张先生 - 软件工程师</h3>
+                    <div class="interview-meta">时间: 2023年10月15日 | 时长: 38分钟</div>
+                    
+                    <div class="interview-content">
+                        <p class="interview-question">您目前使用哪些软件工具进行日常工作？遇到的主要交互问题是什么？</p>
+                        <p class="interview-answer">我主要使用IDE、版本控制工具和项目管理软件。最大的问题是不同工具之间的操作逻辑不一致，需要频繁切换思维模式。此外，许多高级功能隐藏得很深，不查阅文档很难发现。</p>
+                        
+                        <p class="interview-question">您认为什么样的交互方式能够提高您的工作效率？</p>
+                        <p class="interview-answer">我希望有更智能的预测功能，系统能根据我当前的操作预测下一步可能需要的功能。同时，自定义快捷键和手势操作对我来说非常重要。</p>
+                        
+                        <p class="interview-question">追问：您能具体描述一下您理想中的手势操作吗？</p>
+                        <p class="interview-answer">比如三指滑动切换工作区，捏合手势快速保存并最小化当前窗口。这些手势应该可以完全自定义，因为不同人的习惯不同。</p>
+                    </div>
+                </div>
+                
+                <div class="interview-item">
+                    <h3>访谈 #2: 李女士 - 平面设计师</h3>
+                    <div class="interview-meta">时间: 2023年10月17日 | 时长: 42分钟</div>
+                    
+                    <div class="interview-content">
+                        <p class="interview-question">您在设计工作中最常遇到的交互困难是什么？</p>
+                        <p class="interview-answer">工具菜单过于复杂，找一个小功能要点击多次。而且不同设计软件的界面差异很大，学习成本高。颜色选择器也不够直观，很难快速找到想要的颜色。</p>
+                        
+                        <p class="interview-question">您对个性化界面有什么期待？</p>
+                        <p class="interview-answer">我希望界面能记住我最常用的工具，并把它们放在显眼位置。如果能根据我当前的项目类型自动调整工具栏就更好了，比如做UI设计时显示相关工具，做插图时显示画笔选项。</p>
+                    </div>
+                </div>
+                
+                <div class="interview-item">
+                    <h3>访谈 #3: 王同学 - 大学生</h3>
+                    <div class="interview-meta">时间: 2023年10月20日 | 时长: 35分钟</div>
+                    
+                    <div class="interview-content">
+                        <p class="interview-question">您在日常学习和生活中使用哪些应用程序？最喜欢哪些交互特性？</p>
+                        <p class="interview-answer">我常用学习类APP、社交软件和娱乐应用。最喜欢的是那些手势操作简单直观的应用，比如左滑返回、长按快速操作等。不喜欢那些把所有功能都堆在主页面的设计。</p>
+                        
+                        <p class="interview-question">您认为当前应用在交互方面有哪些需要改进的地方？</p>
+                        <p class="interview-answer">很多应用为了增加用户停留时间，故意把一些常用功能隐藏得很深。还有就是广告和弹窗太多，干扰正常使用。我希望有更干净、更直接的交互体验。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="survey-data">
+            <h2 class="section-title">问卷调查数据</h2>
+            <div class="content">
+                <p class="project-description">
+                    我们收集了12位潜在用户的问卷调查数据，以下是部分关键数据的汇总。
+                </p>
+                
+                <div class="survey-item">
+                    <h3>受访者基本信息</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>年龄</th>
+                                <th>职业</th>
+                                <th>每日屏幕使用时间</th>
+                                <th>主要设备</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>28</td>
+                                <td>软件工程师</td>
+                                <td>8-10小时</td>
+                                <td>笔记本电脑</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>25</td>
+                                <td>设计师</td>
+                                <td>6-8小时</td>
+                                <td>台式机+平板</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>22</td>
+                                <td>大学生</td>
+                                <td>4-6小时</td>
+                                <td>智能手机+笔记本电脑</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>35</td>
+                                <td>项目经理</td>
+                                <td>6-8小时</td>
+                                <td>笔记本电脑</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>29</td>
+                                <td>市场营销</td>
+                                <td>7-9小时</td>
+                                <td>智能手机+笔记本电脑</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="survey-item">
+                    <h3>交互偏好调查结果</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>交互方式</th>
+                                <th>非常喜欢</th>
+                                <th>喜欢</th>
+                                <th>中立</th>
+                                <th>不喜欢</th>
+                                <th>非常不喜欢</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>手势控制</td>
+                                <td>4</td>
+                                <td>5</td>
+                                <td>2</td>
+                                <td>1</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>语音命令</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>个性化界面</td>
+                                <td>7</td>
+                                <td>4</td>
+                                <td>1</td>
+                                <td>0</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>预测性功能</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>1</td>
+                                <td>0</td>
+                                <td>0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="survey-item">
+                    <h3>功能需求优先级排序</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>功能</th>
+                                <th>平均排名(1-5)</th>
+                                <th>标准差</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>简化操作流程</td>
+                                <td>4.6</td>
+                                <td>0.52</td>
+                            </tr>
+                            <tr>
+                                <td>个性化界面</td>
+                                <td>4.3</td>
+                                <td>0.67</td>
+                            </tr>
+                            <tr>
+                                <td>手势控制</td>
+                                <td>3.8</td>
+                                <td>0.92</td>
+                            </tr>
+                            <tr>
+                                <td>语音命令</td>
+                                <td>3.2</td>
+                                <td>1.03</td>
+                            </tr>
+                            <tr>
+                                <td>高级自定义</td>
+                                <td>4.1</td>
+                                <td>0.74</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
     
-<p> (1)在github上新建repository,命名为[自己的用户名].github.io <\p>
-<p> (2)在本地编写好网站的html内容，命名为index.html后上传到仓库main目录中 <\p>
-<p> (3)commit change后，在浏览器地址栏搜索https://[自己的用户名].github.io即可进入刚创建好的个人主页 <\p>
-
-
-</textarea>
-    <div id="markdownDisplay"></div>
-    
-    <script>
-        function convertMarkdownToHTML() {
-            var rawMarkdown = document.getElementById('markdownTextArea').value;
-            var processedHTML = marked.parse(rawMarkdown);
-            document.getElementById('markdownDisplay').innerHTML = processedHTML;
-        }
-        convertMarkdownToHTML();
-    </script>
+    <footer>
+        <div class="footer-content">
+            <h2>贡献者声明</h2>
+            <div class="contributors">
+                <div class="contributor-group">
+                    <h3>初稿撰写</h3>
+                    <ul>
+                        <li>张明 - 主要信息、项目提案</li>
+                        <li>李华 - 数据收集计划、访谈数据</li>
+                        <li>王芳 - 问卷调查数据、网站设计</li>
+                    </ul>
+                </div>
+                
+                <div class="contributor-group">
+                    <h3>修改与审阅</h3>
+                    <ul>
+                        <li>刘伟 - 整体结构审核、内容优化</li>
+                        <li>陈静 - 数据分析验证、格式检查</li>
+                        <li>全体成员 - 最终校对</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <p>TechTrio团队 &copy; 2023 人机交互实验课作业</p>
+        </div>
+    </footer>
 </body>
 </html>
