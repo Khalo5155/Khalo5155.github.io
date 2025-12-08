@@ -231,18 +231,10 @@ function updateAnimationByProgress() {
 }
 
 // 加载目录下所有 OBJ 文件
-async function loadAllObjFromDir(dirPath) {
-    try {
-        const validDirPath = dirPath.endsWith('/') ? dirPath : dirPath + '/';
-        const response = await fetch(validDirPath);
-        
-        if (!response.ok) {
-            const errorMsg = `目录访问失败，状态码：${response.status}（路径：${validDirPath}）`;
-            throw new Error(errorMsg);
-        }
-
-        const html = await response.text();
-        const objFilePaths = [
+// 替换原有的 loadAllObjFromDir 函数
+function loadAllObjFromDir(dirPath) {
+    // 手动列出 Objects 目录下的所有 .obj 文件（根据实际文件修改）
+    const objFilePaths = [
         '290_22_10-1_1.obj', 
 '290_22_10-2_1.obj', 
 '290_22_10-3_1.obj', 
@@ -1059,19 +1051,20 @@ async function loadAllObjFromDir(dirPath) {
         // 补充所有实际的 .obj 文件名
         ].map(filename => dirPath + filename); // 拼接完整路径
 
-        if (objFilePaths.length === 0) {
-            document.getElementById('loading').textContent = 'Object 目录下未找到 OBJ 文件';
-            return;
-        }
+    if (objFilePaths.length === 0) {
+        document.getElementById('loading').textContent = '未配置任何 OBJ 文件';
+        return;
+    }
 
-        const loadingElem = document.getElementById('loading');
-        loadingElem.textContent = `加载模型中...（共 ${objFilePaths.length} 个，已加载 0 个）`;
+    const loadingElem = document.getElementById('loading');
+    loadingElem.textContent = `加载模型中...（共 ${objFilePaths.length} 个，已加载 0 个）`;
 
-        let loadedCount = 0;
-        let failedCount = 0; // 修复：之前漏写 let
-        const loader = new THREE.OBJLoader();
+    let loadedCount = 0;
+    let failedCount = 0;
+    const loader = new THREE.OBJLoader();
 
-        objFilePaths.forEach((filePath, index) => {
+    // 以下加载逻辑与原代码一致（省略，直接复用）
+    objFilePaths.forEach((filePath, index) => {
             // console.log(`开始加载模型 ${index + 1}/${objFilePaths.length}：`, filePath);
             loader.load(
                 filePath,
@@ -1159,10 +1152,6 @@ async function loadAllObjFromDir(dirPath) {
                 }
             );
         });
-    } catch (error) {
-        console.error('目录读取失败：', error.message);
-        document.getElementById('loading').textContent = `目录访问失败：${error.message}`;
-    }
 }
 
 // 初始化模型动画数据（按包围盒中心Z坐标排序：Z值更小的模型先下落）
