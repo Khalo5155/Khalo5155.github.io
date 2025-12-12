@@ -1144,7 +1144,7 @@ async function loadAllObjFromDir(dirPath) {
 'M184_13-9_1.obj', 
 'out.txt'
         // 补充所有实际的 .obj 文件名
-        ].map(filename => dirPath + filename); // 拼接完整路径
+        ];
         // 根据文件名生成完整路径
         const objFilePaths = objFileNames.map(filename => validDirPath + filename);
 
