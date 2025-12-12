@@ -134,18 +134,18 @@ function autoAdjustCamera() {
 function getColorByFileName(fileName) {
     const baseName = fileName.replace(/\.[a-zA-Z0-9]+$/, '').trim();
     
-    if (/^D\d+(\.\d+)?_d\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
-        return new THREE.Color(0x00ff00);
-    }
-    else if (/^D\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
-        return new THREE.Color(0xff0000);
-    }
-    else if (/^M\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
-        return new THREE.Color(0xffff00);
-    }
-    else if (/^\d+(\.\d+)?_\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
-        return new THREE.Color(0x0000ff);
-    }
+    // if (/^D\d+(\.\d+)?_d\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
+    //     return new THREE.Color(0x00ff00);
+    // }
+    // else if (/^D\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
+    //     return new THREE.Color(0xff0000);
+    // }
+    // else if (/^M\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
+    //     return new THREE.Color(0xffff00);
+    // }
+    // else if (/^\d+(\.\d+)?_\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
+    //     return new THREE.Color(0x0000ff);
+    // }
     return new THREE.Color(0xaaaaaa);
 }
 
@@ -213,8 +213,10 @@ function updateAnimationByProgress() {
 
         if (stageProgress < startProgress) {
             model.position.copy(data.startPos);
-            resetModelHighlight(model);
-            resetListHighlight(model);
+            if (selectedModel !== model) {
+                resetModelHighlight(model);
+                resetListHighlight(model);
+            }
         } else if (stageProgress <= endProgress) {
             const fallProgress = Math.min(1, (stageProgress - startProgress));
             const easeProgress = 1 - Math.pow(1 - fallProgress, 3);
@@ -223,8 +225,10 @@ function updateAnimationByProgress() {
             setListHighlight(model, true);
         } else {
             model.position.copy(data.targetPos);
-            resetModelHighlight(model);
-            resetListHighlight(model);
+            if (selectedModel !== model) {
+                resetModelHighlight(model);
+                resetListHighlight(model);
+            }
         }
     });
 }
@@ -1142,7 +1146,6 @@ async function loadAllObjFromDir(dirPath) {
 'M184_13-7_1.obj', 
 'M184_13-8_1.obj', 
 'M184_13-9_1.obj', 
-'out.txt'
         // 补充所有实际的 .obj 文件名
         ];
         // 根据文件名生成完整路径
