@@ -1,11 +1,15 @@
-// 全局变量定义（新增 sceneContainer）
+// 全局变量定义（新增 sceneContainer 和物料列表相关变量）
 let scene, camera, renderer, raycaster, mouse, orbitControls;
 let transparentBox, allModels = [];
 const OBJECT_DIR = './Objects/';
 const BOX_SIZE = 1000;
-let sceneContainer; // 新增：场景容器，用于旋转整个坐标空间
+let sceneContainer;
+let materialListElement; // 物料列表容器
+let modelNameMap = new Map(); // 模型与名称的映射关系
+let highlightPenetrateMaterial; // 穿透遮挡物的高亮材质
+let selectedModel = null; // 当前选中的模型
 
-// 动画相关全局变量（不变）
+// 动画相关全局变量
 let modelAnimData = [];
 let animationProgress = 0;
 let isAnimating = false;
@@ -15,12 +19,12 @@ function initScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
 
-    // 新增：创建场景容器，所有可视元素都添加到这个容器中
+    // 创建场景容器，所有可视元素都添加到这个容器中
     sceneContainer = new THREE.Group();
-    loadAllObjFromDir(OBJECT_DIR); // 模型会添加到容器
-    createTransparentBox(); // 透明盒子会添加到容器
-    scene.add(sceneContainer); // 容器添加到场景
-    sceneContainer.rotation.x = -Math.PI / 2; // 核心：绕 X 轴旋转 -90°，实现 Y 轴→Z 轴向上
+    loadAllObjFromDir(OBJECT_DIR);
+    createTransparentBox();
+    scene.add(sceneContainer);
+    sceneContainer.rotation.x = -Math.PI / 2;
 
     camera = new THREE.PerspectiveCamera(
         60,
@@ -28,8 +32,8 @@ function initScene() {
         0.1,
         10000
     );
-    camera.position.set(300, 300, 300); // 调整初始位置
-    camera.lookAt(0, 0, 0); // 默认注视(0,0,0)
+    camera.position.set(300, 300, 300);
+    camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({ 
         antialias: true,
@@ -37,10 +41,13 @@ function initScene() {
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // 软阴影
-    renderer.toneMapping = THREE.ACESFilmicToneMapping; // 电影级色调映射
-    renderer.toneMappingExposure = 1.2; // 曝光调整
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     document.getElementById('container').appendChild(renderer.domElement);
+
+    // 初始化物料列表
+    materialListElement = document.getElementById('material-list');
 
     addLights();
     initRaycaster();
@@ -48,13 +55,22 @@ function initScene() {
     initAnimationControl();
     window.addEventListener('resize', onWindowResize);
 
+    // 初始化穿透高亮材质
+    highlightPenetrateMaterial = new THREE.MeshBasicMaterial({
+        color: 0xaaaaff,
+        transparent: true,
+        opacity: 0.8,
+        side: THREE.DoubleSide,
+        depthTest: false // 穿透遮挡物显示
+    });
+
     animate();
 }
 
 // 创建透明盒子
 function createTransparentBox() {
-    const radius = 1500 / 2; // 半径
-    const height = 1900; // 圆筒高度
+    const radius = 1500 / 2;
+    const height = 1900;
     const radialSegments = 64;
     const geometry = new THREE.CylinderGeometry(
         radius, radius, height, radialSegments, 1, true
@@ -69,12 +85,12 @@ function createTransparentBox() {
     });
 
     transparentBox = new THREE.Mesh(geometry, material);
-    transparentBox.rotation.x = Math.PI / 2; // 绕x轴翻转90°，使圆筒z轴与模型packing方向对齐
+    transparentBox.rotation.x = Math.PI / 2;
 
-    const targetWorldPos = new THREE.Vector3(0, 0, 0); // 目标全局坐标（示例：Z轴向上移500）
-    transparentBox.parent = sceneContainer; // 先关联父容器
-    transparentBox.worldToLocal(targetWorldPos); // 全局坐标 → 父容器的局部坐标
-    transparentBox.position.copy(targetWorldPos); // 应用转换后的局部坐标
+    const targetWorldPos = new THREE.Vector3(0, 0, 0);
+    transparentBox.parent = sceneContainer;
+    transparentBox.worldToLocal(targetWorldPos);
+    transparentBox.position.copy(targetWorldPos);
 
     sceneContainer.add(transparentBox);
 }
@@ -95,69 +111,54 @@ function autoAdjustCamera() {
     const diagonal = Math.sqrt(size.x * size.x + size.y * size.y + size.z * size.z);
 
     const fov = camera.fov * Math.PI / 180;
-    const distance = (diagonal / 2) / Math.tan(fov / 2) * 1.8; // 增大距离，确保完整视野
+    const distance = (diagonal / 2) / Math.tan(fov / 2) * 1.8;
 
-    // 核心修改：相机位置和朝向（让模型X轴负方向=相机视角竖直向上）
     camera.position.set(
-        center.x,                   // X轴与模型中心对齐
-        center.y + distance * 1.0,  // Y轴在模型上方
-        center.z + distance * 0.8   // Z轴在模型前方
+        center.x,
+        center.y + distance * 1.0,
+        center.z + distance * 0.8
     );
 
-    // 关键：相机看向模型中心，但通过调整相机自身旋转，让模型X轴负方向呈现为竖直向上
     camera.lookAt(center);
-    // 绕Z轴旋转90°，让模型X轴负方向转为相机视角的Y轴正方向（竖直向上）
     camera.rotation.z = Math.PI / 2;
 
     orbitControls.target.copy(center);
     orbitControls.update();
 
-    // 调整透明容器的位置
     const boxpos = new THREE.Vector3(0, 120, 1900+230);
     boxpos.add(center);
     transparentBox.position.copy(boxpos);
-    // const boxScale = diagonal / BOX_SIZE * 1.2;
-    // transparentBox.scale.set(boxScale, boxScale, boxScale);
 }
 
-// 新增：根据文件名解析形状并返回对应颜色
+// 根据文件名解析形状并返回对应颜色
 function getColorByFileName(fileName) {
-    // 移除文件扩展名（不区分大小写）
     const baseName = fileName.replace(/\.[a-zA-Z0-9]+$/, '').trim();
     
-    // 1. 圆环 Dx_dy_z（支持外径、内径、高度含小数，如 D22_d17_13.65）
     if (/^D\d+(\.\d+)?_d\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
-        return new THREE.Color(0x00ff00); // 绿色
+        return new THREE.Color(0x00ff00);
     }
-    // 2. 圆柱 Dx_y（支持直径、高度含小数，如 D35_35、D200_205）
     else if (/^D\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
-        return new THREE.Color(0xff0000); // 红色
+        return new THREE.Color(0xff0000);
     }
-    // 3. 圆柱 Mx_y（支持直径、高度含小数）
     else if (/^M\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
-        return new THREE.Color(0xffff00); // 黄色
+        return new THREE.Color(0xffff00);
     }
-    // 4. 长方体 x_y_z（支持长、宽、高含小数）
     else if (/^\d+(\.\d+)?_\d+(\.\d+)?_\d+(\.\d+)?$/.test(baseName)) {
-        return new THREE.Color(0x0000ff); // 蓝色
+        return new THREE.Color(0x0000ff);
     }
-    // 默认颜色（不匹配任何规则时）
     return new THREE.Color(0xaaaaaa);
 }
 
 // 添加增强光源
 function addLights() {
-    // 环境光调整为更柔和的暖色调，避免过亮
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
-    // 主方向光（模拟太阳光）- 增强阴影质量
     const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
-    directionalLight1.position.set(500, 800, 600); // 更远的光源位置增强阴影效果
+    directionalLight1.position.set(500, 800, 600);
     directionalLight1.castShadow = true;
     
-    // 阴影质量设置
-    directionalLight1.shadow.mapSize.width = 2048;  // 更高分辨率阴影
+    directionalLight1.shadow.mapSize.width = 2048;
     directionalLight1.shadow.mapSize.height = 2048;
     directionalLight1.shadow.camera.near = 10;
     directionalLight1.shadow.camera.far = 2000;
@@ -165,16 +166,14 @@ function addLights() {
     directionalLight1.shadow.camera.right = 1000;
     directionalLight1.shadow.camera.top = 1000;
     directionalLight1.shadow.camera.bottom = -1000;
-    directionalLight1.shadow.radius = 2;  // 阴影模糊
+    directionalLight1.shadow.radius = 2;
     scene.add(directionalLight1);
 
-    // 辅助光源（补光）- 减少暗部
     const directionalLight2 = new THREE.DirectionalLight(0xe0e0ff, 0.6);
     directionalLight2.position.set(-400, 300, -300);
-    directionalLight2.castShadow = false; // 补光不产生阴影避免混乱
+    directionalLight2.castShadow = false;
     scene.add(directionalLight2);
 
-    // 底部填充光 - 增强底部亮度，避免过暗
     const directionalLight3 = new THREE.DirectionalLight(0xffffe0, 0.3);
     directionalLight3.position.set(0, -500, 0);
     directionalLight3.castShadow = false;
@@ -187,11 +186,8 @@ function initAnimationControl() {
     const progressText = document.getElementById('animation-progress');
     const controlPanel = document.getElementById('animation-control');
 
-    // 滑动条事件监听（修改精度处理）
     slider.addEventListener('input', (e) => {
-        // 将 0-10000 的值转换为 0-100 范围的百分比（保留两位小数）
         animationProgress = parseInt(e.target.value) / 100;
-        // 显示为带两位小数的百分比
         progressText.textContent = `${animationProgress.toFixed(2)}%`;
         
         isAnimating = animationProgress > 0;
@@ -216,24 +212,124 @@ function updateAnimationByProgress() {
         const endProgress = index + 1;
 
         if (stageProgress < startProgress) {
-            model.position.copy(data.startPos); // Z 轴顶端位置
+            model.position.copy(data.startPos);
             resetModelHighlight(model);
+            resetListHighlight(model);
         } else if (stageProgress <= endProgress) {
             const fallProgress = Math.min(1, (stageProgress - startProgress));
             const easeProgress = 1 - Math.pow(1 - fallProgress, 3);
-            model.position.lerpVectors(data.startPos, data.targetPos, easeProgress); // 沿 Z 轴插值下落
+            model.position.lerpVectors(data.startPos, data.targetPos, easeProgress);
             setModelHighlight(model, true);
+            setListHighlight(model, true);
         } else {
-            model.position.copy(data.targetPos); // 回到原始 Z 轴位置
+            model.position.copy(data.targetPos);
             resetModelHighlight(model);
+            resetListHighlight(model);
         }
     });
 }
 
-// 加载目录下所有 OBJ 文件
+// 创建物料列表
+function createMaterialList() {
+    materialListElement.innerHTML = '';
+    modelNameMap.clear();
+    
+    allModels.forEach((model, index) => {
+        // 获取模型文件名作为显示名称
+        const fileName = model.userData.fileName || `模型 ${index + 1}`;
+        const baseName = fileName.replace(/\.[a-zA-Z0-9]+$/, '').trim();
+        
+        // 创建列表项
+        const listItem = document.createElement('div');
+        listItem.className = 'material-item';
+        listItem.textContent = baseName;
+        listItem.dataset.index = index;
+        
+        // 存储模型与列表项的映射关系
+        modelNameMap.set(model, listItem);
+        modelNameMap.set(listItem, model);
+        
+        // 列表项鼠标事件
+        listItem.addEventListener('mouseenter', () => {
+            // if (isAnimating) return;
+            const model = modelNameMap.get(listItem);
+            // 使用穿透高亮材质
+            setModelListHighlight(model, true);
+            setListHighlight(model, true);
+        });
+
+        listItem.addEventListener('mouseleave', () => {
+            // if (isAnimating) return;
+            const model = modelNameMap.get(listItem);
+            // 重置为原始材质
+            if (model != selectedModel){
+                setModelListHighlight(model, false);
+                setListHighlight(model, false);
+            }
+        });
+
+        listItem.addEventListener('click', () => {
+            const model = modelNameMap.get(listItem);
+            // 取消之前选中模型的高亮
+            if (selectedModel) {
+                resetModelHighlight(selectedModel);
+                resetListHighlight(selectedModel);
+            }
+            // 设置新选中模型的高亮
+            if (selectedModel !== model) {
+                selectedModel = model;
+                setModelListHighlight(selectedModel, true);
+                setListHighlight(selectedModel, true);
+            } else {
+                selectedModel = null;
+            }
+        });
+        
+        materialListElement.appendChild(listItem);
+    });
+    
+    materialListElement.style.display = 'block';
+}
+
+// 确保列表项可见
+function ensureListItemVisible(model) {
+    const listItem = modelNameMap.get(model);
+    if (!listItem) return;
+    
+    const listRect = materialListElement.getBoundingClientRect();
+    const itemRect = listItem.getBoundingClientRect();
+    
+    // 检查列表项是否在可视区域内
+    if (itemRect.top < listRect.top || itemRect.bottom > listRect.bottom) {
+        // 滚动到列表项位置
+        listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+// 初始化模型动画数据
+function initModelAnimationData() {
+    modelAnimData = [];
+    allModels.forEach((model) => {
+        const boundingBox = new THREE.Box3().setFromObject(model);
+        const center = new THREE.Vector3();
+        boundingBox.getCenter(center);
+        const centerZ = center.y;
+        
+        modelAnimData.push({
+            model: model,
+            targetPos: new THREE.Vector3(0, 0, 0),
+            startPos: new THREE.Vector3(0, 0, 1500),
+            centerZ: centerZ
+        });
+    });
+    
+    modelAnimData.sort((a, b) => a.centerZ - b.centerZ);
+    modelAnimData.forEach((data) => data.model.position.copy(data.startPos));
+}
+
 // 替换原有的 loadAllObjFromDir 函数
 function loadAllObjFromDir(dirPath) {
-    // 手动列出 Objects 目录下的所有 .obj 文件（根据实际文件修改）
+    // 手动列出 Objects 目录下的所有 .obj 文件
     const objFilePaths = [
         '290_22_10-1_1.obj', 
 '290_22_10-2_1.obj', 
@@ -1046,10 +1142,9 @@ function loadAllObjFromDir(dirPath) {
 'M184_13-6_1.obj', 
 'M184_13-7_1.obj', 
 'M184_13-8_1.obj', 
-'M184_13-9_1.obj', 
-'out.txt'
-        // 补充所有实际的 .obj 文件名
-        ].map(filename => dirPath + filename); // 拼接完整路径
+'M184_13-9_1.obj'
+        // 所有实际的 .obj 文件名
+    ].map(filename => dirPath + filename); // 拼接完整路径
 
     if (objFilePaths.length === 0) {
         document.getElementById('loading').textContent = '未配置任何 OBJ 文件';
@@ -1063,143 +1158,106 @@ function loadAllObjFromDir(dirPath) {
     let failedCount = 0;
     const loader = new THREE.OBJLoader();
 
-    // 以下加载逻辑与原代码一致（省略，直接复用）
     objFilePaths.forEach((filePath, index) => {
-            // console.log(`开始加载模型 ${index + 1}/${objFilePaths.length}：`, filePath);
-            loader.load(
-                filePath,
-                (object) => {
-                    object.castShadow = true;
-                    object.receiveShadow = true;
+        loader.load(
+            filePath,
+            (object) => {
+                object.castShadow = true;
+                object.receiveShadow = true;
 
-                    // 材质处理
-                    object.traverse((child) => {
-                        if (child.isMesh) {
-                            // 从文件路径提取文件名
-                            const fileName = filePath.split('/').pop();
-                            // 根据文件名获取对应颜色
-                            const shapeColor = getColorByFileName(fileName);
-                            
-                            // 使用更真实的物理材质并应用形状颜色
-                            child.material = new THREE.MeshStandardMaterial({
-                                color: shapeColor,  // 使用根据形状确定的颜色
-                                metalness: 0.2,
-                                roughness: 0.7,
-                                reflectivity: 0.3,
-                                shininess: 80,
-                                side: THREE.DoubleSide
-                            });
-                            
-                            // 确保接收和投射阴影
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                            
-                            child.userData.originalMaterial = child.material;
-                            // 随机色调变化
-                            const hueVariation = (Math.random() - 0.5) * 0.1;
-                            child.material.color.offsetHSL(hueVariation, 0, 0);
-                        }
-                    });
+                // 存储文件名到模型的userData中
+                const fileName = filePath.split('/').pop();
+                object.userData.fileName = fileName;
 
-                    // 核心修改：模型添加到 sceneContainer（而非直接添加到 scene）
-                    sceneContainer.add(object);
-                    allModels.push(object);
-
-                    loadedCount++;
-                    // console.log(`模型 ${index + 1} 加载成功，当前成功数：${loadedCount}`);
-                    
-                    if (loadedCount + failedCount < objFilePaths.length) {
-                        loadingElem.textContent = `加载模型中...（共 ${objFilePaths.length} 个，已加载 ${loadedCount} 个，失败 ${failedCount} 个）`;
-                    } else {
-                        loadingElem.style.display = 'none';
-                        document.getElementById('info').style.display = 'block';
+                object.traverse((child) => {
+                    if (child.isMesh) {
+                        const shapeColor = getColorByFileName(fileName);
                         
-                        if (loadedCount > 0) {
-                            autoAdjustCamera();
-                            initModelAnimationData();
-                            window.dispatchEvent(new Event('modelsLoaded'));
-                        }
-
-                        if (failedCount === 0) {
-                            console.log(`所有 ${objFilePaths.length} 个模型加载成功！`);
-                        } else {
-                            console.warn(`模型加载完成：成功 ${loadedCount} 个，失败 ${failedCount} 个`);
-                        }
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: shapeColor,
+                            metalness: 0.2,
+                            roughness: 0.7,
+                            reflectivity: 0.3,
+                            shininess: 80,
+                            side: THREE.DoubleSide
+                        });
+                        
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        
+                        child.userData.originalMaterial = child.material;
+                        const hueVariation = (Math.random() - 0.5) * 0.1;
+                        child.material.color.offsetHSL(hueVariation, 0, 0);
                     }
-                },
-                (xhr) => {
-                    const progress = Math.round((xhr.loaded / xhr.total) * 100);
-                    // console.log(`模型 ${index + 1} 加载进度：${progress}%`);
-                },
-                (error) => {
-                    const errorMsg = `模型 ${index + 1} 加载失败：${error.message}`;
-                    console.error(errorMsg, '路径：', filePath);
+                });
+
+                sceneContainer.add(object);
+                allModels.push(object);
+
+                loadedCount++;
+                
+                if (loadedCount + failedCount < objFilePaths.length) {
+                    loadingElem.textContent = `加载模型中...（共 ${objFilePaths.length} 个，已加载 ${loadedCount} 个，失败 ${failedCount} 个）`;
+                } else {
+                    loadingElem.style.display = 'none';
+                    document.getElementById('info').style.display = 'block';
                     
-                    failedCount++;
-                    
-                    if (loadedCount + failedCount < objFilePaths.length) {
-                        loadingElem.textContent = `加载模型中...（共 ${objFilePaths.length} 个，已加载 ${loadedCount} 个，失败 ${failedCount} 个）`;
+                    if (loadedCount > 0) {
+                        autoAdjustCamera();
+                        initModelAnimationData();
+                        createMaterialList(); // 模型加载完成后创建物料列表
+                        window.dispatchEvent(new Event('modelsLoaded'));
+                    }
+
+                    if (failedCount === 0) {
+                        console.log(`所有 ${objFilePaths.length} 个模型加载成功！`);
                     } else {
-                        loadingElem.style.display = 'none';
-                        document.getElementById('info').style.display = 'block';
-                        
-                        if (loadedCount > 0) {
-                            autoAdjustCamera();
-                            initModelAnimationData();
-                            window.dispatchEvent(new Event('modelsLoaded'));
-                        }
+                        console.warn(`模型加载完成：成功 ${loadedCount} 个，失败 ${failedCount} 个`);
                     }
                 }
-            );
-        });
-}
-
-// 初始化模型动画数据（按包围盒中心Z坐标排序：Z值更小的模型先下落）
-function initModelAnimationData() {
-    modelAnimData = [];
-    allModels.forEach((model) => {
-        // 计算模型包围盒（包含模型所有顶点的最小立方体）
-        const boundingBox = new THREE.Box3().setFromObject(model);
-        // 获取包围盒中心的Z坐标（用于排序）
-        const center = new THREE.Vector3();
-        boundingBox.getCenter(center);
-        const centerZ = center.y;
-        
-        modelAnimData.push({
-            model: model,
-            targetPos: new THREE.Vector3(0, 0, 0), // 模型下落目标位置
-            startPos: new THREE.Vector3(0, 0, 1500), // 模型初始位置（顶部）
-            centerZ: centerZ // 存储包围盒中心Z坐标用于排序
-        });
+            },
+            (xhr) => {
+                const progress = Math.round((xhr.loaded / xhr.total) * 100);
+            },
+            (error) => {
+                const errorMsg = `模型 ${index + 1} 加载失败：${error.message}`;
+                console.error(errorMsg, '路径：', filePath);
+                
+                failedCount++;
+                
+                if (loadedCount + failedCount < objFilePaths.length) {
+                    loadingElem.textContent = `加载模型中...（共 ${objFilePaths.length} 个，已加载 ${loadedCount} 个，失败 ${failedCount} 个）`;
+                } else {
+                    loadingElem.style.display = 'none';
+                    document.getElementById('info').style.display = 'block';
+                    
+                    if (loadedCount > 0) {
+                        autoAdjustCamera();
+                        initModelAnimationData();
+                        createMaterialList();
+                        window.dispatchEvent(new Event('modelsLoaded'));
+                    }
+                }
+            }
+        );
     });
-    
-    // 按包围盒中心Z坐标从小到大排序（Z值越小，越先开始下落动画）
-    modelAnimData.sort((a, b) => a.centerZ - b.centerZ);
-    
-    // 初始化所有模型到起始位置
-    modelAnimData.forEach((data) => data.model.position.copy(data.startPos));
 }
 
 // 解析目录 HTML
-// 修复路径拼接逻辑：兼容绝对路径和相对路径，避免URL错误
 function parseObjPathsFromDirHTML(html, baseDir) {
     const objPaths = [];
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     
-    // 适配新版 Live Server（li > a 格式）
     const linkElements = doc.querySelectorAll('li a');
     linkElements.forEach(link => {
         const href = link.getAttribute('href');
         if (href && href.endsWith('.obj')) {
             try {
-                // 优先使用 URL 构造器解析（处理相对路径和绝对路径）
                 const baseUrl = new URL(baseDir, window.location.origin);
                 const fullUrl = new URL(href, baseUrl);
                 objPaths.push(fullUrl.href);
-                // console.log('解析到OBJ文件路径：', fullUrl.href);
             } catch (e) {
-                // 异常时降级使用字符串拼接
                 const fullPath = baseDir.endsWith('/') ? baseDir + href : baseDir + '/' + href;
                 objPaths.push(fullPath);
                 console.warn('路径解析降级处理：', fullPath, e.message);
@@ -1207,7 +1265,6 @@ function parseObjPathsFromDirHTML(html, baseDir) {
         }
     });
 
-    // 兼容旧版 Live Server（直接匹配a标签href）
     if (objPaths.length === 0) {
         const regex = /<a\s+href="([^"]+\.obj)"[^>]*>/gi;
         let match;
@@ -1235,6 +1292,8 @@ function initRaycaster() {
     const canvas = renderer.domElement;
     canvas.addEventListener('mousemove', onMouseMove);
     canvas.addEventListener('mouseleave', onMouseLeave);
+    // 添加点击事件
+    canvas.addEventListener('click', onMouseClick);
 }
 
 // 初始化轨道控制器
@@ -1244,9 +1303,8 @@ function initOrbitControls() {
     orbitControls.dampingFactor = 0.05;
     orbitControls.screenSpacePanning = true;
     
-    // 扩大缩放范围（原范围：50 - 5000）
-    orbitControls.minDistance = 10;  // 缩小最小距离，允许更近距离观察
-    orbitControls.maxDistance = 10000;  // 增大最大距离，允许更远距离观察
+    orbitControls.minDistance = 10;
+    orbitControls.maxDistance = 10000;
     
     orbitControls.maxPolarAngle = Math.PI / 1.3;
     orbitControls.minPolarAngle = -Math.PI / 1.3;
@@ -1266,38 +1324,61 @@ function onMouseMove(event) {
     const intersects = raycaster.intersectObjects(allModels, true);
     const hoveredModel = intersects.length > 0 ? getTopLevelModel(intersects[0].object) : null;
 
-    // 鼠标高亮逻辑
-    allModels.forEach((model) => {
-        model.traverse((child) => {
-            if (child.isMesh && child.userData.originalMaterial) {
-                if (model === hoveredModel) {
-                    child.material = new THREE.MeshPhongMaterial({
-                        color: 0xffff00,
-                        emissive: 0xffff00,
-                        emissiveIntensity: 1.5,
-                        shininess: 100,
-                        transparent: child.userData.originalMaterial.transparent || false,
-                        opacity: child.userData.originalMaterial.opacity || 1.0
-                    });
-                } else {
-                    child.material = child.userData.originalMaterial;
-                }
-            }
-        });
+    // 重置所有高亮
+    allModels.forEach(model => {
+        // 如果是选中的模型则不重置
+        if (model !== selectedModel) {
+            resetModelHighlight(model);
+            resetListHighlight(model);
+        }
     });
+
+    // 高亮当前选中的模型和列表项
+    if (hoveredModel && hoveredModel !== selectedModel) {
+        setModelHighlight(hoveredModel, true);
+        setListHighlight(hoveredModel, true);
+    }
 }
 
 // 鼠标离开事件
 function onMouseLeave() {
-    if (isAnimating) return; // 动画播放时不重置
+    // if (isAnimating) return;
 
     allModels.forEach((model) => {
-        model.traverse((child) => {
-            if (child.isMesh && child.userData.originalMaterial) {
-                child.material = child.userData.originalMaterial;
-            }
-        });
+        // 保留选中模型的高亮
+        if (model !== selectedModel) {
+            resetModelHighlight(model);
+            resetListHighlight(model);
+        }
     });
+}
+
+// 添加点击事件处理函数
+function onMouseClick() {
+    // if (isAnimating) return;
+
+    camera.updateProjectionMatrix();
+    raycaster.setFromCamera(mouse, camera);
+
+    const intersects = raycaster.intersectObjects(allModels, true);
+    const clickedModel = intersects.length > 0 ? getTopLevelModel(intersects[0].object) : null;
+
+    if (clickedModel) {
+        ensureListItemVisible(clickedModel);
+        
+        // 处理选中状态
+        if (selectedModel) {
+            resetModelHighlight(selectedModel);
+            resetListHighlight(selectedModel);
+        }
+        if (selectedModel !== clickedModel) {
+            selectedModel = clickedModel;
+            setModelListHighlight(selectedModel, true);
+            setListHighlight(selectedModel, true);
+        } else {
+            selectedModel = null;
+        }
+    }
 }
 
 // 设置模型高亮（动画用）
@@ -1323,6 +1404,44 @@ function setModelHighlight(model, isHighlight) {
 // 重置模型高亮
 function resetModelHighlight(model) {
     setModelHighlight(model, false);
+}
+
+// 设置列表项高亮
+function setListHighlight(model, isHighlight) {
+    const listItem = modelNameMap.get(model);
+    if (listItem) {
+        if (isHighlight) {
+            listItem.classList.add('highlighted');
+        } else {
+            listItem.classList.remove('highlighted');
+        }
+    }
+}
+
+// 重置列表项高亮
+function resetListHighlight(model) {
+    setListHighlight(model, false);
+}
+
+// 添加列表项鼠标悬停时的模型高亮函数，穿透显示
+function setModelListHighlight(model, isHighlight) {
+    model.traverse((child) => {
+        if (child.isMesh && child.userData.originalMaterial) {
+            if (isHighlight) {
+                // 保存当前材质用于恢复
+                child.userData.tempMaterial = child.material;
+                child.material = highlightPenetrateMaterial;
+            } else {
+                // 恢复原始材质
+                if (child.userData.tempMaterial) {
+                    child.material = child.userData.tempMaterial;
+                    delete child.userData.tempMaterial;
+                } else {
+                    child.material = child.userData.originalMaterial;
+                }
+            }
+        }
+    });
 }
 
 // 获取顶层模型
