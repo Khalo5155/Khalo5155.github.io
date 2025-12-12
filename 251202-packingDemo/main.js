@@ -1202,7 +1202,8 @@ async function loadAllObjFromDir(dirPath) {
                         loadingElem.textContent = `加载模型中...（共 ${objFilePaths.length} 个，已加载 ${loadedCount} 个，失败 ${failedCount} 个）`;
                     } else {
                         loadingElem.style.display = 'none';
-                        document.getElementById('info').style.display = 'block';
+                        // 注释掉，不显示info bar
+                        // document.getElementById('info').style.display = 'block';
                         
                         if (loadedCount > 0) {
                             autoAdjustCamera();
@@ -1231,7 +1232,7 @@ async function loadAllObjFromDir(dirPath) {
                         loadingElem.textContent = `加载模型中...（共 ${objFilePaths.length} 个，已加载 ${loadedCount} 个，失败 ${failedCount} 个）`;
                     } else {
                         loadingElem.style.display = 'none';
-                        document.getElementById('info').style.display = 'block';
+                        // document.getElementById('info').style.display = 'block';
                         
                         if (loadedCount > 0) {
                             autoAdjustCamera();
