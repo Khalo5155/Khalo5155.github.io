@@ -1146,7 +1146,7 @@ async function loadAllObjFromDir(dirPath) {
         // 补充所有实际的 .obj 文件名
         ].map(filename => dirPath + filename); // 拼接完整路径
         // 根据文件名生成完整路径
-        const objFilePaths = objFileNames.map(name => validDirPath + name);
+        const objFilePaths = objFileNames.map(filename => validDirPath + filename);
 
         if (objFilePaths.length === 0) {
             document.getElementById('loading').textContent = 'Object 目录下未找到 OBJ 文件';
