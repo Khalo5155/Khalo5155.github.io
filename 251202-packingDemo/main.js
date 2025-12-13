@@ -13,6 +13,72 @@ let selectedModel = null; // 当前选中的模型
 let modelAnimData = [];
 let animationProgress = 0;
 let isAnimating = false;
+// 获取滑动条元素
+const animationSlider = document.getElementById('animation-slider');
+const progressDisplay = document.getElementById('animation-progress');
+// 监听键盘按键事件
+document.addEventListener('keydown', (event) => {
+  // 获取当前滑动条值
+  let currentValue = parseInt(animationSlider.value);
+  const step = 1; // 每次按键的步长
+  const min = parseInt(animationSlider.min);
+  const max = parseInt(animationSlider.max);
+
+  // 根据按下的键调整值
+  if (event.key === 'ArrowUp') {
+    // 上方向键 - 减小滑动条值
+    currentValue = Math.max(min, currentValue - step);
+    event.preventDefault(); // 阻止页面滚动
+  } else if (event.key === 'ArrowDown') {
+    // 下方向键 - 增大滑动条值
+    currentValue = Math.min(max, currentValue + step);
+    event.preventDefault(); // 阻止页面滚动
+  } else {
+    // 不是方向键则不处理
+    return;
+  }
+
+  // 更新滑动条值和显示
+  animationSlider.value = currentValue;
+  const percentage = Math.round((currentValue / max) * 100);
+  progressDisplay.textContent = `${percentage}%`;
+
+  // 触发滑动条的input事件（如果原代码中有监听该事件来控制动画）
+  const inputEvent = new Event('input');
+  animationSlider.dispatchEvent(inputEvent);
+});
+
+// 鼠标相关全局变量
+let isLeftMouseDown = false; // 左键按下
+let isMovedDuringLMD = false; // 左键按下后有没有发生移动
+// 监听鼠标按下事件
+document.addEventListener('mousedown', (e) => {
+  // e.button === 0 表示左键（标准浏览器）
+  if (e.button === 0) {
+    isLeftMouseDown = true;
+    isMovedDuringLMD = false;
+    console.log('左键按下');
+  }
+});
+// 监听鼠标释放事件
+document.addEventListener('mouseup', (e) => {
+  // 释放左键时重置状态
+  if (e.button === 0) {
+    isLeftMouseDown = false;
+    console.log('左键释放');
+  }
+});
+// 监听鼠标移动事件
+document.addEventListener('mousemove', (e) => {
+  if (isLeftMouseDown) {
+    isMovedDuringLMD = true;
+  }
+});
+// 监听鼠标离开窗口事件（防止鼠标在窗口外释放导致状态错误）
+document.addEventListener('mouseleave', () => {
+  isLeftMouseDown = false;
+  isMovedDuringLMD = false;
+});
 
 // 初始化场景
 function initScene() {
@@ -217,6 +283,9 @@ function updateAnimationByProgress() {
                 resetModelHighlight(model);
                 resetListHighlight(model);
             }
+            else {
+                setModelListHighlight(model, true);
+            }
         } else if (stageProgress <= endProgress) {
             const fallProgress = Math.min(1, (stageProgress - startProgress));
             const easeProgress = 1 - Math.pow(1 - fallProgress, 3);
@@ -228,6 +297,9 @@ function updateAnimationByProgress() {
             if (selectedModel !== model) {
                 resetModelHighlight(model);
                 resetListHighlight(model);
+            }
+            else {
+                setModelListHighlight(model, true);
             }
         }
     });
@@ -1280,6 +1352,8 @@ function initOrbitControls() {
 
 // 鼠标移动事件（高亮逻辑）
 function onMouseMove(event) {
+    if (isLeftMouseDown) return; // 拖动时不进行交互
+
     const canvas = renderer.domElement;
     const rect = canvas.getBoundingClientRect();
 
@@ -1321,6 +1395,8 @@ function onMouseLeave() {
 
 // 添加点击事件处理函数
 function onMouseClick() {
+    if (isMovedDuringLMD) return;
+
     camera.updateProjectionMatrix();
     raycaster.setFromCamera(mouse, camera);
 
