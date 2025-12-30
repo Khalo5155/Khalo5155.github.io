@@ -1,0 +1,35 @@
+# file written from a CGAL tool in Wavefront obj format
+# 8 vertices
+# 36 halfedges
+# 12 facets
+
+
+# 8 vertices
+# ------------------------------------------
+
+v 416 681 162
+v 416 681 152
+v 416 656 162
+v 416 656 152
+v 441 681 162
+v 441 681 152
+v 441 656 162
+v 441 656 152
+
+# 12 facets
+# ------------------------------------------
+
+f  1 2 4
+f  1 4 3
+f  3 4 8
+f  3 8 7
+f  7 8 6
+f  7 6 5
+f  5 6 2
+f  5 2 1
+f  3 7 5
+f  3 5 1
+f  8 4 2
+f  8 2 6
+
+# End of Wavefront obj format #
