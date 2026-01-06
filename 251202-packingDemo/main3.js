@@ -141,7 +141,7 @@ function initScene() {
     animate();
 }
 
-// 创建透明盒子
+// 创建透明盒子（含高度刻度线+文本标注）
 function createTransparentBox() {
     const radius = 1500 / 2;
     const height = 1900;
@@ -159,7 +159,7 @@ function createTransparentBox() {
     });
 
     transparentBox = new THREE.Mesh(geometry, material);
-    transparentBox.rotation.x = Math.PI / 2;
+    transparentBox.rotation.x = Math.PI / 2; // 圆柱绕X轴旋转90度 → 原Z轴变为Y轴
 
     const targetWorldPos = new THREE.Vector3(0, 0, 0);
     transparentBox.parent = sceneContainer;
@@ -167,6 +167,37 @@ function createTransparentBox() {
     transparentBox.position.copy(targetWorldPos);
 
     sceneContainer.add(transparentBox);
+
+    // ========== 新增：高度刻度线 ==========
+    // 核心注意：圆柱旋转了Math.PI/2（X轴），原Cylinder的高度方向（Z轴）变为Y轴
+    // 刻度位置：1400/1000/600（基于圆柱高度方向的绝对位置）
+    const heightMarks = [1400, 1000, 600];
+    const markConfig = {
+        color: 0xff0000,    // 刻度线颜色（红色）
+        length: 100,        // 刻度线长度（沿X轴）
+        lineWidth: 2        // 刻度线宽度
+    };
+
+    // 遍历生成每个刻度（核心修改：Z轴设为圆柱半径，贴合外壁）
+    heightMarks.forEach(markValue => {
+        // 1. 计算刻度在旋转后圆柱上的实际坐标
+        // 圆柱默认高度中心在Y=0，总高1900+230 → 刻度位置需换算为相对中心的偏移
+        const yPos = (markValue - (height+230) / 2); 
+        // 关键：Z轴设为圆柱半径（radius），让刻度线贴在圆柱外壁
+        const zPos = radius; 
+
+        // 2. 创建刻度线（线段）- 调整Z轴坐标到圆柱外壁
+        const markGeometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(-markConfig.length / 2, yPos, zPos), // 线段起点（Z=radius）
+            new THREE.Vector3(markConfig.length / 2, yPos, zPos)  // 线段终点（Z=radius）
+        ]);
+        const markMaterial = new THREE.LineBasicMaterial({ 
+            color: markConfig.color,
+            lineWidth: markConfig.lineWidth
+        });
+        const markLine = new THREE.Line(markGeometry, markMaterial);
+        transparentBox.add(markLine); // 挂载到圆柱，随圆柱同步变换
+    });
 }
 
 // 自动调整相机
