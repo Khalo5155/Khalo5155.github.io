@@ -199,7 +199,7 @@ function autoAdjustCamera() {
     orbitControls.target.copy(center);
     orbitControls.update();
 
-    const boxpos = new THREE.Vector3(0, 0, 1900+230);
+    const boxpos = new THREE.Vector3(0, -80, 1900+230);
     boxpos.add(center);
     transparentBox.position.copy(boxpos);
 }
