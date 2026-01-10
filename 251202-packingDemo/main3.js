@@ -424,7 +424,7 @@ function initModelAnimationData() {
     modelAnimData = [];
     allModels.forEach((model) => {
         // 跳过特殊模型（支柱模型）
-        if (model.userData.fileName == 'x-border-support.obj') {
+        if (model.userData.fileName == 'pillars.obj') {
             return;
         }
 
@@ -450,10 +450,10 @@ async function loadAllObjFromDir(dirPath) {
     try {
         const validDirPath = dirPath.endsWith('/') ? dirPath : dirPath + '/';
         const objFileNames = [
-            'x-border-support.obj',
-            'x-border1400Gap.obj',
-            'x-border1000Gap.obj',
-            'x-border600Gap.obj',
+            'pillars.obj',
+            'disk600.obj',
+            'disk1000.obj',
+            'disk1400.obj',
             '25_25_10_1.obj',
 '25_25_10_2.obj',
 '25_25_10_3.obj',
