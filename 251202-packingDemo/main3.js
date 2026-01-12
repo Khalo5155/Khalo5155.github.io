@@ -8,6 +8,7 @@ let materialListElement; // 物料列表容器
 let modelNameMap = new Map(); // 模型与名称的映射关系
 let highlightPenetrateMaterial; // 穿透遮挡物的高亮材质
 let selectedModel = null; // 当前选中的模型
+let css2DRenderer;
 
 // 动画相关全局变量
 let modelAnimData = [];
@@ -120,6 +121,21 @@ function initScene() {
     renderer.toneMappingExposure = 1.2;
     document.getElementById('container').appendChild(renderer.domElement);
 
+    // 新增：初始化CSS2D渲染器（用于文本标注）
+    // 先检查 THREE.CSS2DRenderer 是否存在（防护）
+    if (!THREE.CSS2DRenderer) {
+        console.error('CSS2DRenderer 未正确加载，请检查引入脚本');
+    } else {
+        // 2. 实例化（0.132.2 版本的正确写法）
+        css2DRenderer = new THREE.CSS2DRenderer();
+        css2DRenderer.setSize(window.innerWidth, window.innerHeight);
+        // 3. 样式设置（0.132.2 版本兼容这些属性）
+        css2DRenderer.domElement.style.position = 'absolute';
+        css2DRenderer.domElement.style.top = '0';
+        css2DRenderer.domElement.style.pointerEvents = 'none'; // 不阻挡鼠标交互
+        document.getElementById('container').appendChild(css2DRenderer.domElement);
+    }
+
     // 初始化物料列表
     materialListElement = document.getElementById('material-list');
 
@@ -180,23 +196,44 @@ function createTransparentBox() {
 
     // 遍历生成每个刻度（核心修改：Z轴设为圆柱半径，贴合外壁）
     heightMarks.forEach(markValue => {
-        // 1. 计算刻度在旋转后圆柱上的实际坐标
-        // 圆柱默认高度中心在Y=0，总高1900+230 → 刻度位置需换算为相对中心的偏移
-        const yPos = (markValue - (height+230) / 2); 
-        // 关键：Z轴设为圆柱半径（radius），让刻度线贴在圆柱外壁
-        const zPos = radius; 
-
-        // 2. 创建刻度线（线段）- 调整Z轴坐标到圆柱外壁
+        const radius = 1500 / 2;
+        const height = 1900+270;
+        
+        // 关键修正：竖向圆柱的高度方向 = Y 轴
+        // 计算逻辑：圆柱中心在 Y=0，总高1900 → 刻度值相对中心的偏移
+        const yPos = markValue - height/2; // 1400 → 1400-950=450；1000→50；600→-350
+        const zPos = radius + 50; // 圆柱外壁外侧50px（Z轴向外，避免被圆柱遮挡）
+        const xPos = 0; // X轴居中
+        
+        // 1. 刻度线（竖向圆柱的刻度线：沿X轴横向，Y轴是高度）
         const markGeometry = new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(-markConfig.length / 2, yPos, zPos), // 线段起点（Z=radius）
-            new THREE.Vector3(markConfig.length / 2, yPos, zPos)  // 线段终点（Z=radius）
+            new THREE.Vector3(-100, yPos, zPos),  // 刻度线左端点
+            new THREE.Vector3(100, yPos, zPos)    // 刻度线右端点（横向刻度，贴合竖向圆柱）
         ]);
         const markMaterial = new THREE.LineBasicMaterial({ 
             color: markConfig.color,
             lineWidth: markConfig.lineWidth
         });
         const markLine = new THREE.Line(markGeometry, markMaterial);
-        transparentBox.add(markLine); // 挂载到圆柱，随圆柱同步变换
+        transparentBox.add(markLine);
+
+        // 2. 文本标注（在刻度线右侧，竖向排列）
+        const textDiv = document.createElement('div');
+        textDiv.style.color = '#ff0000';
+        textDiv.style.fontSize = '16px';
+        textDiv.style.fontWeight = 'bold';
+        textDiv.style.textShadow = '1px 1px 2px #000';
+        textDiv.textContent = markValue;
+        // 可选：让文本竖向显示（如果需要）
+        // textDiv.style.writingMode = 'vertical-rl';
+
+        const textLabel = new THREE.CSS2DObject(textDiv);
+        // 文本位置：刻度线右侧（X轴+80），Y轴和刻度线一致，Z轴贴外壁
+        textLabel.position.set(80, yPos, zPos);
+        transparentBox.add(textLabel);
+
+        // 日志：验证坐标
+        console.log(`刻度${markValue}：Y=${yPos}（高度），Z=${zPos}（径向）`);
     });
 }
 
@@ -1544,6 +1581,10 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     orbitControls.update();
+    // 同步更新CSS2D渲染器尺寸
+    if (css2DRenderer) {
+        css2DRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
 }
 
 // 渲染循环
@@ -1551,6 +1592,10 @@ function animate() {
     requestAnimationFrame(animate);
     orbitControls.update();
     renderer.render(scene, camera);
+    // 渲染CSS2D标签（文本标注）
+    if (css2DRenderer) {
+        css2DRenderer.render(scene, camera);
+    }
 }
 
 // 启动应用
