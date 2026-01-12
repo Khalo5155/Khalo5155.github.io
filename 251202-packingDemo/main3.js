@@ -187,7 +187,7 @@ function createTransparentBox() {
     // ========== 新增：高度刻度线 ==========
     // 核心注意：圆柱旋转了Math.PI/2（X轴），原Cylinder的高度方向（Z轴）变为Y轴
     // 刻度位置：1400/1000/600（基于圆柱高度方向的绝对位置）
-    const heightMarks = [1400, 1000, 600];
+    const heightMarks = [1400, 1000, 600, 1900];
     const markConfig = {
         color: 0xff0000,    // 刻度线颜色（红色）
         length: 100,        // 刻度线长度（沿X轴）
@@ -201,7 +201,8 @@ function createTransparentBox() {
         
         // 关键修正：竖向圆柱的高度方向 = Y 轴
         // 计算逻辑：圆柱中心在 Y=0，总高1900 → 刻度值相对中心的偏移
-        const yPos = markValue - height/2; // 1400 → 1400-950=450；1000→50；600→-350
+        var yPos = markValue - height/2; // 1400 → 1400-950=450；1000→50；600→-350
+        if (markValue == 1900)yPos += 130;
         const zPos = radius + 50; // 圆柱外壁外侧50px（Z轴向外，避免被圆柱遮挡）
         const xPos = 0; // X轴居中
         
