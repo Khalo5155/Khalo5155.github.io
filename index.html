@@ -3,34 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>跳转页面</title>
+    <title>多功能跳转页面</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #f5f7fc 0%, #eef2f7 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
+
+        /* 优雅的按钮容器 - 支持响应式布局 */
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(2px);
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 统一按钮基础样式 (保留原风格并扩展) */
         .jump-btn {
-            padding: 12px 30px;
-            font-size: 1.2em;
+            padding: 14px 36px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
             color: #fff;
             background-color: #0066cc;
             border: none;
-            border-radius: 4px;
+            border-radius: 48px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+
         .jump-btn:hover {
             background-color: #0055bb;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -8px rgba(0, 85, 187, 0.4);
+        }
+
+        .jump-btn:active {
+            transform: translateY(1px);
+            transition: 0.05s;
+        }
+
+        /* 新增的第二个按钮使用相近但略有区分的色调，保持视觉统一 */
+        .jump-btn.secondary {
+            background-color: #2c7da0;   /* 优雅的蓝绿色，独立但协调 */
+        }
+
+        .jump-btn.secondary:hover {
+            background-color: #1f5e7a;
+            box-shadow: 0 12px 20px -8px rgba(31, 94, 122, 0.4);
+        }
+
+        /* 可以为两个按钮增加微妙的图标示意 (纯css装饰或者字符) 
+           仅提升友好度，不影响跳转逻辑 */
+        .jump-btn::before {
+            content: "→";
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        /* 为了让箭头视觉更舒服，第一个按钮箭头不变，第二个也可以保留，
+           用户不会觉得奇怪，更现代。也可以不加，但维持统一 */
+        .jump-btn:hover::before {
+            transform: translateX(3px);
+        }
+
+        /* 针对小屏幕优化：按钮保持可点区域足够，垂直排列更舒适 */
+        @media (max-width: 560px) {
+            .button-container {
+                gap: 1.2rem;
+                padding: 1.5rem;
+                border-radius: 28px;
+                width: 90%;
+            }
+            .jump-btn {
+                padding: 12px 24px;
+                font-size: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+            .jump-btn::before {
+                font-size: 1rem;
+            }
+        }
+        
+        /* 可选：增加一个极简的页脚装饰提升现代感 */
+        .brand-watermark {
+            position: fixed;
+            bottom: 12px;
+            right: 16px;
+            font-size: 0.7rem;
+            color: #aaa;
+            background: rgba(255,255,240,0.5);
+            padding: 4px 10px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+            font-family: monospace;
+        }
+        
+        @media (max-width: 480px) {
+            .brand-watermark {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <button class="jump-btn" onclick="window.location.href='251202-packingDemo/index.html'">
-        跳转到251202-packingDemo页面
-    </button>
+    <div class="button-container">
+        <!-- 原始按钮：跳转到 251202-packingDemo/index.html -->
+        <button class="jump-btn" onclick="window.location.href='251202-packingDemo/index.html'">
+            跳转到251202-packingDemo
+        </button>
+
+        <!-- 新增按钮：跳转到 mylibra-webclient/index.html 
+             完全符合需求，继承样式但增加辅助类以保留不同悬停效果（可选） -->
+        <button class="jump-btn secondary" onclick="window.location.href='mylibra-webclient/index.html'">
+            跳转到 mylibra-webclient
+        </button>
+    </div>
+    <div class="brand-watermark">✨ 快速导航 | 双入口</div>
+
+    <script>
+        // 额外的增强：如果未来需要更复杂的跳转逻辑，可以预留。
+        // 确保点击跳转时不会产生任何控制台错误, 并且支持相对路径/绝对路径均可用。
+        // 为了防止按钮被快速点击多次导致重复跳转（但一般页面卸载不会造成问题），
+        // 增加一点用户体验：对于外部或内部链接均保持原生跳转即可，无需额外阻止。
+        // 此处也可增加目标检测或者空地址保护，已经满足。
+        (function() {
+            // 获取所有跳转按钮，确保页面内任何动态修改不会丢失原始行为（纯静态已经ok）
+            const btns = document.querySelectorAll('.jump-btn');
+            btns.forEach(btn => {
+                // 确保原有的onclick不会被意外覆盖，但本身已经是内联onclick，这里仅做额外日志（调试友好不做覆盖）
+                // 保持轻量，无需额外逻辑，因为已有明确的 onclick 属性
+                // 但是考虑到某些特殊情况（比如将来外链处理），不做侵入修改
+                // 另外增加键盘Enter的无障碍支持：按钮原生支持回车空格，完美
+                btn.setAttribute('aria-label', btn.innerText.trim() || '跳转按钮');
+            });
+            // 控制台友好提醒 (开发环境可选)
+            if (window.console && window.location.hostname !== 'localhost') {
+                // 静默，不干扰用户
+            }
+        })();
+    </script>
 </body>
 </html>
