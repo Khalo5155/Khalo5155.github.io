@@ -15,10 +15,11 @@
         }
 
         :root {
-            --bg-page: #f8f6f1;
+            --bg-page: #f4f1eb;
             --bg-card: #ffffff;
             --bg-hover: #f3efe8;
             --bg-active: #eae3d8;
+            --bg-selected: #f0ebe3;
             --text-primary: #2c2c2c;
             --text-secondary: #6b5f55;
             --text-light: #9a8e84;
@@ -30,7 +31,7 @@
             --radius-sm: 8px;
             --font-serif: 'Georgia', 'Times New Roman', '宋体', 'Songti SC', serif;
             --font-sans: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
-            --transition: 0.25s ease;
+            --transition: 0.2s ease;
             --max-width: 1280px;
         }
 
@@ -84,19 +85,15 @@
 
         /* ===== 顶部 ===== */
         .header {
-            padding: 28px 32px 16px 32px;
+            padding: 24px 32px 16px 32px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
             background: var(--bg-card);
-        }
-
-        .header-top {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 8px 16px;
-            margin-bottom: 16px;
         }
 
         .header-title {
@@ -118,55 +115,9 @@
             font-size: 0.85rem;
             color: var(--text-light);
             background: var(--bg-page);
-            padding: 4px 14px;
+            padding: 4px 16px;
             border-radius: 20px;
             white-space: nowrap;
-        }
-
-        /* ===== 章节导航 ===== */
-        .chapter-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 2px;
-        }
-
-        .chapter-btn {
-            font-family: var(--font-sans);
-            font-size: 0.9rem;
-            padding: 6px 18px;
-            border: none;
-            border-radius: 20px;
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: var(--transition);
-            letter-spacing: 0.02em;
-            position: relative;
-            white-space: nowrap;
-        }
-        .chapter-btn:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-        .chapter-btn.active {
-            background: var(--accent);
-            color: #fff;
-            font-weight: 500;
-            box-shadow: 0 2px 12px rgba(139, 107, 77, 0.25);
-        }
-        .chapter-btn .badge {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 400;
-            background: rgba(255, 255, 255, 0.25);
-            border-radius: 10px;
-            padding: 0 8px;
-            margin-left: 4px;
-            line-height: 1.6;
-        }
-        .chapter-btn.active .badge {
-            background: rgba(255, 255, 255, 0.2);
         }
 
         /* ===== 主体 ===== */
@@ -177,9 +128,9 @@
             height: 100%;
         }
 
-        /* ===== 诗歌列表 ===== */
+        /* ===== 左侧边栏：可折叠目录树 ===== */
         .list-panel {
-            width: 300px;
+            width: 320px;
             min-width: 200px;
             flex-shrink: 0;
             border-right: 1px solid var(--border);
@@ -190,89 +141,139 @@
         }
 
         .list-panel .list-header {
-            padding: 16px 20px 10px 20px;
+            padding: 16px 20px 12px 20px;
             font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--text-light);
-            letter-spacing: 0.04em;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.06em;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            text-transform: uppercase;
         }
         .list-panel .list-header span:last-child {
             font-weight: 400;
             color: var(--text-light);
         }
 
-        .poem-list {
+        .tree-container {
             flex: 1;
             overflow-y: auto;
-            padding: 8px 0;
+            padding: 8px 0 20px 0;
             list-style: none;
         }
 
-        .poem-list li {
-            padding: 10px 20px;
+        /* 章节条目 */
+        .chapter-item {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chapter-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px 8px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+            user-select: none;
+            letter-spacing: 0.02em;
+        }
+        .chapter-toggle:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        .chapter-toggle .arrow {
+            display: inline-block;
+            font-size: 0.65rem;
+            transition: transform 0.25s ease;
+            width: 16px;
+            text-align: center;
+            color: var(--text-light);
+        }
+        .chapter-toggle .arrow.expanded {
+            transform: rotate(90deg);
+        }
+        .chapter-toggle .chapter-label {
+            flex: 1;
+        }
+        .chapter-toggle .chapter-badge {
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: var(--text-light);
+            background: var(--bg-page);
+            padding: 0 10px;
+            border-radius: 12px;
+            line-height: 1.8;
+        }
+
+        /* 诗歌子列表 */
+        .poem-sublist {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.2s ease;
+            max-height: 2000px;
+            opacity: 1;
+        }
+        .poem-sublist.hidden {
+            max-height: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .poem-sublist li {
+            padding: 6px 20px 6px 44px;
             cursor: pointer;
             transition: var(--transition);
             border-left: 3px solid transparent;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
         }
-        .poem-list li:hover {
+        .poem-sublist li:hover {
             background: var(--bg-hover);
         }
-        .poem-list li.active {
+        .poem-sublist li.active {
             background: var(--bg-active);
             border-left-color: var(--accent);
+            font-weight: 500;
+            color: var(--accent);
         }
 
-        .poem-list li .index-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--border);
-            flex-shrink: 0;
-            transition: var(--transition);
-        }
-        .poem-list li.active .index-dot {
-            background: var(--accent);
-            width: 8px;
-            height: 8px;
-        }
-
-        .poem-list li .poem-title {
+        .poem-sublist li .poem-title {
             font-family: var(--font-serif);
-            font-size: 0.95rem;
-            color: var(--text-primary);
-            transition: var(--transition);
             flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .poem-list li .poem-date-mini {
+        .poem-sublist li .poem-date-mini {
             font-size: 0.7rem;
             color: var(--text-light);
             flex-shrink: 0;
             white-space: nowrap;
         }
-        .poem-list li.active .poem-title {
-            color: var(--accent);
-            font-weight: 500;
-        }
 
-        .poem-list .empty-msg {
+        .tree-container .empty-msg {
             padding: 40px 20px;
             text-align: center;
             color: var(--text-light);
             font-size: 0.9rem;
+            list-style: none;
         }
 
-        /* ===== 诗歌详情 ===== */
+        /* ===== 右侧详情 ===== */
         .detail-panel {
             flex: 1;
             padding: 32px 40px 40px 40px;
@@ -404,7 +405,7 @@
                 border-radius: var(--radius-sm);
             }
             .header {
-                padding: 20px 18px 12px 18px;
+                padding: 18px 18px 12px 18px;
             }
             .header-title {
                 font-size: 1.4rem;
@@ -417,10 +418,6 @@
                 font-size: 0.75rem;
                 padding: 2px 12px;
             }
-            .chapter-btn {
-                font-size: 0.8rem;
-                padding: 4px 14px;
-            }
 
             .main {
                 flex-direction: column;
@@ -432,18 +429,20 @@
                 min-width: unset;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
-                max-height: 200px;
+                max-height: 240px;
                 flex-shrink: 0;
             }
             .list-panel .list-header {
-                padding: 12px 16px 8px 16px;
+                padding: 10px 16px 8px 16px;
                 font-size: 0.75rem;
             }
-            .poem-list li {
-                padding: 8px 16px;
+            .chapter-toggle {
+                padding: 6px 16px 6px 16px;
+                font-size: 0.85rem;
             }
-            .poem-list li .poem-title {
-                font-size: 0.88rem;
+            .poem-sublist li {
+                padding: 5px 16px 5px 32px;
+                font-size: 0.85rem;
             }
 
             .detail-panel {
@@ -468,7 +467,7 @@
                 padding: 6px;
             }
             .header {
-                padding: 14px 12px 10px 12px;
+                padding: 12px 12px 10px 12px;
             }
             .header-title {
                 font-size: 1.2rem;
@@ -478,14 +477,21 @@
                 display: block;
                 margin-left: 0;
             }
-            .header-top {
+            .header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 4px;
             }
-            .chapter-btn {
-                font-size: 0.75rem;
-                padding: 4px 12px;
+            .list-panel {
+                max-height: 180px;
+            }
+            .chapter-toggle {
+                padding: 5px 12px;
+                font-size: 0.8rem;
+            }
+            .poem-sublist li {
+                padding: 4px 12px 4px 24px;
+                font-size: 0.8rem;
             }
             .detail-panel {
                 padding: 16px 14px 24px 14px;
@@ -497,15 +503,6 @@
                 font-size: 0.9rem;
                 line-height: 1.8;
             }
-            .list-panel {
-                max-height: 160px;
-            }
-            .poem-list li {
-                padding: 6px 12px;
-            }
-            .poem-list li .poem-title {
-                font-size: 0.82rem;
-            }
         }
     </style>
 </head>
@@ -514,26 +511,21 @@
     <div class="app" id="app">
         <!-- 顶部 -->
         <header class="header">
-            <div class="header-top">
-                <div class="header-title">
-                    诗集 <small>六章</small>
-                </div>
-                <div class="header-count" id="totalCount">共 0 首</div>
+            <div class="header-title">
+                诗集 <small>六章</small>
             </div>
-            <nav class="chapter-nav" id="chapterNav">
-                <!-- 由 JS 动态生成 -->
-            </nav>
+            <div class="header-count" id="totalCount">共 0 首</div>
         </header>
 
         <!-- 主体 -->
         <div class="main">
-            <!-- 左侧列表 -->
+            <!-- 左侧边栏：可折叠目录树 -->
             <section class="list-panel" id="listPanel">
                 <div class="list-header">
-                    <span>📜 诗歌</span>
+                    <span>📂 目录</span>
                     <span id="listCount">0 首</span>
                 </div>
-                <ul class="poem-list" id="poemList">
+                <ul class="tree-container" id="treeContainer">
                     <!-- 由 JS 动态生成 -->
                 </ul>
             </section>
@@ -550,45 +542,49 @@
             'use strict';
 
             // ===== DOM 引用 =====
-            const chapterNav = document.getElementById('chapterNav');
-            const poemList = document.getElementById('poemList');
+            const treeContainer = document.getElementById('treeContainer');
             const detailPanel = document.getElementById('detailPanel');
             const totalCount = document.getElementById('totalCount');
             const listCount = document.getElementById('listCount');
 
             // ===== 状态 =====
-            let allPoems = []; // 所有诗歌
-            let grouped = {}; // { chapter: [poems] }
-            let chapters = []; // 排序后的章节列表
-            let currentChapter = null;
-            let currentPoemId = null; // 使用 index 作为 id
+            let allPoems = [];
+            let grouped = {};
+            let chapters = [];
+            let expandedState = {}; // { chapterKey: true/false }
+            let selectedPoemIndex = null;
 
             // ===== 工具函数 =====
             function getChapterLabel(chapter) {
-                // 如果 chapter 是数字，转为中文
                 if (typeof chapter === 'number') {
                     const map = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
                     return `第${map[chapter - 1] || chapter}章`;
                 }
-                // 如果已经是 "第一章" 样式，直接返回
                 if (typeof chapter === 'string' && /^第.{1,2}章$/.test(chapter)) {
                     return chapter;
                 }
-                // 否则原样返回
                 return String(chapter);
             }
 
             function getChapterSortKey(chapter) {
-                // 尝试提取数字排序
                 if (typeof chapter === 'number') return chapter;
                 const match = String(chapter).match(/(\d+)/);
                 if (match) return parseInt(match[1], 10);
-                // 中文数字映射
                 const map = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
                 for (const [cn, num] of Object.entries(map)) {
                     if (String(chapter).includes(cn)) return num;
                 }
-                return 999; // 兜底
+                return 999;
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
             }
 
             // ===== 加载数据 =====
@@ -601,7 +597,6 @@
                     const poems = lines.map((line, idx) => {
                         try {
                             const obj = JSON.parse(line);
-                            // 确保每个对象有基本字段
                             return {
                                 title: obj.title || '无题',
                                 date: obj.date || '',
@@ -622,7 +617,6 @@
 
                     allPoems = poems;
 
-                    // 按章节分组
                     const g = {};
                     for (const p of allPoems) {
                         const key = String(p.chapter);
@@ -631,19 +625,21 @@
                     }
                     grouped = g;
 
-                    // 排序章节
                     chapters = Object.keys(grouped).sort((a, b) => {
                         return getChapterSortKey(a) - getChapterSortKey(b);
                     });
 
-                    // 更新总数
+                    // 初始化展开状态：默认全部展开
+                    for (const ch of chapters) {
+                        expandedState[ch] = true;
+                    }
+
                     totalCount.textContent = `共 ${allPoems.length} 首`;
 
-                    // 渲染
-                    renderChapters();
-                    // 默认选中第一个有诗的章节
-                    if (chapters.length > 0) {
-                        setCurrentChapter(chapters[0]);
+                    renderTree();
+                    // 默认选中第一首诗
+                    if (allPoems.length > 0) {
+                        selectPoem(allPoems[0]._index);
                     } else {
                         showEmptyState();
                     }
@@ -658,98 +654,146 @@
                             <p style="font-size:0.8rem;color:#ddd;margin-top:12px;">请确保 poems.jsonl 文件位于同一目录下</p>
                         </div>
                     `;
-                    poemList.innerHTML = `<li class="empty-msg">数据加载失败</li>`;
+                    treeContainer.innerHTML = `<li class="empty-msg">数据加载失败</li>`;
                     totalCount.textContent = '共 0 首';
+                    listCount.textContent = '0 首';
                 }
             }
 
-            // ===== 渲染章节导航 =====
-            function renderChapters() {
-                chapterNav.innerHTML = '';
-                for (const ch of chapters) {
-                    const btn = document.createElement('button');
-                    btn.className = 'chapter-btn';
-                    btn.dataset.chapter = ch;
-                    const label = getChapterLabel(ch);
-                    const count = grouped[ch] ? grouped[ch].length : 0;
-                    btn.innerHTML = `${label} <span class="badge">${count}</span>`;
-                    btn.addEventListener('click', () => {
-                        setCurrentChapter(ch);
-                    });
-                    chapterNav.appendChild(btn);
-                }
-            }
-
-            // ===== 设置当前章节 =====
-            function setCurrentChapter(chapterKey) {
-                currentChapter = chapterKey;
-                // 更新导航高亮
-                document.querySelectorAll('.chapter-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.chapter === chapterKey);
-                });
-                // 渲染诗歌列表
-                renderPoemList(chapterKey);
-                // 选中第一首诗
-                const poems = grouped[chapterKey] || [];
-                if (poems.length > 0) {
-                    selectPoem(poems[0]._index);
-                } else {
-                    showEmptyDetail('该章节暂无诗歌');
-                }
-            }
-
-            // ===== 渲染诗歌列表 =====
-            function renderPoemList(chapterKey) {
-                const poems = grouped[chapterKey] || [];
-                listCount.textContent = `${poems.length} 首`;
-
-                if (poems.length === 0) {
-                    poemList.innerHTML = `<li class="empty-msg">该章节暂无诗歌</li>`;
+            // ===== 渲染侧边栏目录树 =====
+            function renderTree() {
+                if (!chapters.length) {
+                    treeContainer.innerHTML = `<li class="empty-msg">暂无章节</li>`;
+                    listCount.textContent = '0 首';
                     return;
                 }
 
                 const frag = document.createDocumentFragment();
-                for (const p of poems) {
-                    const li = document.createElement('li');
-                    li.dataset.index = p._index;
-                    li.innerHTML = `
-                        <span class="index-dot"></span>
-                        <span class="poem-title">${escapeHtml(p.title)}</span>
-                        <span class="poem-date-mini">${p.date || ''}</span>
+
+                for (const ch of chapters) {
+                    const poems = grouped[ch] || [];
+                    const label = getChapterLabel(ch);
+                    const isExpanded = expandedState[ch] !== false; // 默认展开
+
+                    // 章节容器
+                    const chapterItem = document.createElement('li');
+                    chapterItem.className = 'chapter-item';
+
+                    // 章节标题
+                    const toggle = document.createElement('div');
+                    toggle.className = 'chapter-toggle';
+                    toggle.dataset.chapter = ch;
+                    toggle.innerHTML = `
+                        <span class="arrow ${isExpanded ? 'expanded' : ''}">▸</span>
+                        <span class="chapter-label">${escapeHtml(label)}</span>
+                        <span class="chapter-badge">${poems.length}</span>
                     `;
-                    li.addEventListener('click', () => {
-                        selectPoem(p._index);
+                    toggle.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleChapter(ch);
                     });
-                    frag.appendChild(li);
+
+                    // 诗歌子列表
+                    const subList = document.createElement('ul');
+                    subList.className = `poem-sublist ${isExpanded ? '' : 'hidden'}`;
+                    subList.dataset.chapter = ch;
+
+                    if (poems.length === 0) {
+                        const emptyLi = document.createElement('li');
+                        emptyLi.textContent = '（暂无诗歌）';
+                        emptyLi.style.color = 'var(--text-light)';
+                        emptyLi.style.fontStyle = 'italic';
+                        emptyLi.style.cursor = 'default';
+                        emptyLi.style.paddingLeft = '44px';
+                        subList.appendChild(emptyLi);
+                    } else {
+                        for (const p of poems) {
+                            const li = document.createElement('li');
+                            li.dataset.index = p._index;
+                            li.innerHTML = `
+                                <span class="poem-title">${escapeHtml(p.title)}</span>
+                                <span class="poem-date-mini">${p.date || ''}</span>
+                            `;
+                            li.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                selectPoem(p._index);
+                            });
+                            subList.appendChild(li);
+                        }
+                    }
+
+                    chapterItem.appendChild(toggle);
+                    chapterItem.appendChild(subList);
+                    frag.appendChild(chapterItem);
                 }
-                poemList.innerHTML = '';
-                poemList.appendChild(frag);
+
+                treeContainer.innerHTML = '';
+                treeContainer.appendChild(frag);
+
+                // 更新总诗数
+                listCount.textContent = `${allPoems.length} 首`;
 
                 // 高亮当前选中的诗歌
-                highlightCurrentPoem();
+                highlightSelectedPoem();
             }
 
-            // ===== 选中某首诗 =====
+            // ===== 切换章节折叠 =====
+            function toggleChapter(chapterKey) {
+                const current = expandedState[chapterKey];
+                expandedState[chapterKey] = !current;
+
+                // 更新 DOM 中的子列表和箭头
+                const subList = treeContainer.querySelector(`.poem-sublist[data-chapter="${chapterKey}"]`);
+                const toggle = treeContainer.querySelector(`.chapter-toggle[data-chapter="${chapterKey}"]`);
+                if (subList) {
+                    subList.classList.toggle('hidden');
+                }
+                if (toggle) {
+                    const arrow = toggle.querySelector('.arrow');
+                    if (arrow) {
+                        arrow.classList.toggle('expanded');
+                    }
+                }
+            }
+
+            // ===== 选中诗歌 =====
             function selectPoem(index) {
                 const poem = allPoems.find(p => p._index === index);
                 if (!poem) return;
 
-                currentPoemId = index;
-                highlightCurrentPoem();
+                selectedPoemIndex = index;
+                highlightSelectedPoem();
                 renderDetail(poem);
+
+                // 确保父章节展开
+                const chapterKey = String(poem.chapter);
+                if (expandedState[chapterKey] === false) {
+                    // 展开该章节
+                    expandedState[chapterKey] = true;
+                    const subList = treeContainer.querySelector(`.poem-sublist[data-chapter="${chapterKey}"]`);
+                    const toggle = treeContainer.querySelector(`.chapter-toggle[data-chapter="${chapterKey}"]`);
+                    if (subList) subList.classList.remove('hidden');
+                    if (toggle) {
+                        const arrow = toggle.querySelector('.arrow');
+                        if (arrow) arrow.classList.add('expanded');
+                    }
+                }
             }
 
-            // ===== 高亮当前诗歌 =====
-            function highlightCurrentPoem() {
-                const items = poemList.querySelectorAll('li');
-                items.forEach(li => {
-                    const idx = parseInt(li.dataset.index, 10);
-                    li.classList.toggle('active', idx === currentPoemId);
+            // ===== 高亮当前选中的诗歌 =====
+            function highlightSelectedPoem() {
+                // 移除所有高亮
+                treeContainer.querySelectorAll('.poem-sublist li').forEach(li => {
+                    li.classList.remove('active');
                 });
-                // 滚动到可见
-                const activeEl = poemList.querySelector('li.active');
-                if (activeEl) {
-                    activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+                if (selectedPoemIndex !== null) {
+                    const target = treeContainer.querySelector(`.poem-sublist li[data-index="${selectedPoemIndex}"]`);
+                    if (target) {
+                        target.classList.add('active');
+                        // 滚动到可见区域
+                        target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
                 }
             }
 
@@ -768,15 +812,6 @@
             }
 
             // ===== 空状态 =====
-            function showEmptyDetail(msg) {
-                detailPanel.innerHTML = `
-                    <div class="placeholder">
-                        <div class="icon">📖</div>
-                        <p>${msg || '暂无诗歌'}</p>
-                    </div>
-                `;
-            }
-
             function showEmptyState() {
                 detailPanel.innerHTML = `
                     <div class="placeholder">
@@ -784,30 +819,18 @@
                         <p>暂无诗歌数据</p>
                     </div>
                 `;
-                poemList.innerHTML = `<li class="empty-msg">暂无诗歌</li>`;
+                treeContainer.innerHTML = `<li class="empty-msg">暂无诗歌</li>`;
                 listCount.textContent = '0 首';
             }
 
-            // ===== 简易防 XSS =====
-            function escapeHtml(str) {
-                if (!str) return '';
-                return String(str)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
-            }
-
             // ===== 初始化 =====
-            // 显示加载状态
             detailPanel.innerHTML = `
                 <div class="loading-state">
                     <div class="spinner"></div>
                     <p>正在载入诗集 …</p>
                 </div>
             `;
-            poemList.innerHTML = `<li class="empty-msg">加载中...</li>`;
+            treeContainer.innerHTML = `<li class="empty-msg">加载中...</li>`;
 
             loadData();
 
