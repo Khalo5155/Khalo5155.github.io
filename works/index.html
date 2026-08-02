@@ -1,841 +1,699 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>诗集 · 六章</title>
-    <style>
-        /* ===== 全局重置 & 基础 ===== */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <title>诗集 · 六章 | 滚动浏览</title>
+  <style>
+    /* ===== 全局重置 & 基础变量 ===== */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        :root {
-            --bg-page: #f4f1eb;
-            --bg-card: #ffffff;
-            --bg-hover: #f3efe8;
-            --bg-active: #eae3d8;
-            --bg-selected: #f0ebe3;
-            --text-primary: #2c2c2c;
-            --text-secondary: #6b5f55;
-            --text-light: #9a8e84;
-            --accent: #8b6b4d;
-            --accent-light: #b5957a;
-            --border: #e2dad0;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-            --radius: 12px;
-            --radius-sm: 8px;
-            --font-serif: 'Georgia', 'Times New Roman', '宋体', 'Songti SC', serif;
-            --font-sans: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
-            --transition: 0.2s ease;
-            --max-width: 1280px;
-        }
+    :root {
+      --bg-page: #f4f1eb;
+      --bg-card: #ffffff;
+      --bg-hover: #f3efe8;
+      --bg-active: #eae3d8;
+      --bg-selected: #f0ebe3;
+      --text-primary: #2c2c2c;
+      --text-secondary: #6b5f55;
+      --text-light: #9a8e84;
+      --accent: #8b6b4d;
+      --accent-light: #b5957a;
+      --border: #e2dad0;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font-serif: 'Georgia', 'Times New Roman', '宋体', 'Songti SC', 'Noto Serif SC', serif;
+      --font-sans: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+      --transition: 0.2s ease;
+      --max-width: 1300px;
+    }
 
-        html {
-            font-size: 16px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
 
-        body {
-            font-family: var(--font-sans);
-            background-color: var(--bg-page);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
 
-        /* ===== 滚动条 ===== */
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-light);
-        }
+    /* 滚动条美化 */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #d4c9bc;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-light);
+    }
 
-        /* ===== 容器 ===== */
-        .app {
-            max-width: var(--max-width);
-            width: 100%;
-            margin: 0 auto;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            min-height: 80vh;
-            max-height: 96vh;
-        }
+    /* 主应用卡片 */
+    .app {
+      max-width: var(--max-width);
+      width: 100%;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 90vh;
+      min-height: 650px;
+    }
 
-        /* ===== 顶部 ===== */
-        .header {
-            padding: 24px 32px 16px 32px;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-            background: var(--bg-card);
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px 16px;
-        }
+    /* 头部 */
+    .header {
+      padding: 20px 28px 16px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .header-title small {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-light);
+      margin-left: 10px;
+    }
+    .header-count {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      background: #f4f1eb;
+      padding: 4px 16px;
+      border-radius: 20px;
+    }
 
-        .header-title {
-            font-family: var(--font-serif);
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            color: var(--text-primary);
-        }
-        .header-title small {
-            font-size: 1rem;
-            font-weight: 400;
-            color: var(--text-light);
-            letter-spacing: 0.02em;
-            margin-left: 10px;
-        }
+    /* 主体：左右两栏布局 */
+    .main {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
 
-        .header-count {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            background: var(--bg-page);
-            padding: 4px 16px;
-            border-radius: 20px;
-            white-space: nowrap;
-        }
+    /* ---- 左侧目录 (固定宽度，可滚动) ---- */
+    .list-panel {
+      width: 280px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      background: #fdfaf7;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .list-header {
+      padding: 16px 18px 12px 18px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-transform: uppercase;
+      background: #fdfaf7;
+      flex-shrink: 0;
+    }
+    .tree-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0 16px 0;
+      list-style: none;
+    }
 
-        /* ===== 主体 ===== */
-        .main {
-            display: flex;
-            flex: 1;
-            min-height: 0;
-            height: 100%;
-        }
+    /* 章节条目 */
+    .chapter-item {
+      list-style: none;
+      margin: 2px 0;
+    }
+    .chapter-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px 10px 18px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+      border-left: 3px solid transparent;
+      user-select: none;
+    }
+    .chapter-toggle:hover {
+      background: var(--bg-hover);
+      color: #1e1e1e;
+    }
+    .arrow {
+      font-size: 0.7rem;
+      width: 16px;
+      text-align: center;
+      color: var(--text-light);
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+    .arrow.expanded {
+      transform: rotate(90deg);
+    }
+    .chapter-label {
+      flex: 1;
+      font-family: var(--font-serif);
+      letter-spacing: 0.5px;
+    }
+    .chapter-badge {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--text-light);
+      background: #f4f1eb;
+      padding: 2px 10px;
+      border-radius: 12px;
+    }
 
-        /* ===== 左侧边栏：可折叠目录树 ===== */
-        .list-panel {
-            width: 320px;
-            min-width: 200px;
-            flex-shrink: 0;
-            border-right: 1px solid var(--border);
-            background: var(--bg-card);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+    /* 诗歌子列表 */
+    .poem-sublist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.2s;
+      max-height: 1600px;
+      opacity: 1;
+    }
+    .poem-sublist.hidden {
+      max-height: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .poem-sublist li {
+      padding: 7px 18px 7px 38px;
+      cursor: pointer;
+      transition: var(--transition);
+      border-left: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #3a3a3a;
+    }
+    .poem-sublist li:hover {
+      background: #f3efe8;
+    }
+    .poem-sublist li.active {
+      background: #eae3d8;
+      border-left-color: var(--accent);
+      font-weight: 500;
+      color: var(--accent);
+    }
+    .poem-title {
+      font-family: var(--font-serif);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .poem-date-mini {
+      font-size: 0.7rem;
+      color: #b9aa9a;
+      white-space: nowrap;
+    }
 
-        .list-panel .list-header {
-            padding: 16px 20px 12px 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            letter-spacing: 0.06em;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            text-transform: uppercase;
-        }
-        .list-panel .list-header span:last-child {
-            font-weight: 400;
-            color: var(--text-light);
-        }
+    /* ---- 右侧滚动诗集详情 (核心修改：展示所有诗) ---- */
+    .detail-panel {
+      flex: 1;
+      overflow-y: auto;
+      background: #ffffff;
+      padding: 28px 32px 40px 32px;
+      scroll-behavior: smooth;
+    }
 
-        .tree-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px 0 20px 0;
-            list-style: none;
-        }
+    /* 诗歌卡片：每一首诗独立成卡，实现滚动显示所有 */
+    .poem-card {
+      background: #ffffff;
+      border-bottom: 1px solid #f0e8dd;
+      padding: 24px 0 28px 0;
+      margin-bottom: 8px;
+      transition: background 0.2s;
+      scroll-margin-top: 20px; /* 锚点跳转留白 */
+    }
+    .poem-card:last-child {
+      border-bottom: none;
+    }
 
-        /* 章节条目 */
-        .chapter-item {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
+    .poem-card .card-title {
+      font-family: var(--font-serif);
+      font-size: 1.9rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #2c2c2c;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .poem-card .card-date {
+      font-size: 0.85rem;
+      color: #b3a38b;
+      margin-bottom: 18px;
+      display: inline-block;
+      border-bottom: 1px dashed #e2dad0;
+      padding-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .poem-card .card-body {
+      font-family: var(--font-serif);
+      font-size: 1.08rem;
+      line-height: 2;
+      color: #2c2c2c;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 14px;
+    }
+    .poem-card .card-description {
+      font-size: 0.92rem;
+      color: #6b5f55;
+      font-style: italic;
+      border-left: 3px solid #d9c5b2;
+      padding-left: 16px;
+      margin-top: 8px;
+      letter-spacing: 0.3px;
+      line-height: 1.6;
+    }
+    .poem-card .card-description::before {
+      content: "✧ ";
+      color: #b5957a;
+      font-style: normal;
+      font-size: 0.9rem;
+    }
 
-        .chapter-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 20px 8px 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            transition: var(--transition);
-            border-left: 3px solid transparent;
-            user-select: none;
-            letter-spacing: 0.02em;
-        }
-        .chapter-toggle:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-        .chapter-toggle .arrow {
-            display: inline-block;
-            font-size: 0.65rem;
-            transition: transform 0.25s ease;
-            width: 16px;
-            text-align: center;
-            color: var(--text-light);
-        }
-        .chapter-toggle .arrow.expanded {
-            transform: rotate(90deg);
-        }
-        .chapter-toggle .chapter-label {
-            flex: 1;
-        }
-        .chapter-toggle .chapter-badge {
-            font-size: 0.7rem;
-            font-weight: 400;
-            color: var(--text-light);
-            background: var(--bg-page);
-            padding: 0 10px;
-            border-radius: 12px;
-            line-height: 1.8;
-        }
+    .empty-message, .loading-message {
+      text-align: center;
+      color: #9a8e84;
+      padding: 60px 20px;
+      font-size: 1rem;
+    }
 
-        /* 诗歌子列表 */
-        .poem-sublist {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease, opacity 0.2s ease;
-            max-height: 2000px;
-            opacity: 1;
-        }
-        .poem-sublist.hidden {
-            max-height: 0;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .poem-sublist li {
-            padding: 6px 20px 6px 44px;
-            cursor: pointer;
-            transition: var(--transition);
-            border-left: 3px solid transparent;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-        }
-        .poem-sublist li:hover {
-            background: var(--bg-hover);
-        }
-        .poem-sublist li.active {
-            background: var(--bg-active);
-            border-left-color: var(--accent);
-            font-weight: 500;
-            color: var(--accent);
-        }
-
-        .poem-sublist li .poem-title {
-            font-family: var(--font-serif);
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .poem-sublist li .poem-date-mini {
-            font-size: 0.7rem;
-            color: var(--text-light);
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-
-        .tree-container .empty-msg {
-            padding: 40px 20px;
-            text-align: center;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            list-style: none;
-        }
-
-        /* ===== 右侧详情 ===== */
-        .detail-panel {
-            flex: 1;
-            padding: 32px 40px 40px 40px;
-            overflow-y: auto;
-            background: var(--bg-card);
-            min-width: 0;
-        }
-
-        .detail-panel .placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text-light);
-            text-align: center;
-        }
-        .detail-panel .placeholder .icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            opacity: 0.4;
-        }
-        .detail-panel .placeholder p {
-            font-size: 0.95rem;
-            letter-spacing: 0.04em;
-        }
-
-        .detail-content {
-            animation: fadeSlideUp 0.35s ease;
-        }
-
-        @keyframes fadeSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .detail-content .detail-title {
-            font-family: var(--font-serif);
-            font-size: 2rem;
-            font-weight: 700;
-            line-height: 1.3;
-            color: var(--text-primary);
-            margin-bottom: 6px;
-            letter-spacing: 0.02em;
-        }
-
-        .detail-content .detail-date {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            margin-bottom: 20px;
-            letter-spacing: 0.04em;
-            display: inline-block;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
-        }
-
-        .detail-content .detail-body {
-            font-family: var(--font-serif);
-            font-size: 1.05rem;
-            line-height: 2;
-            color: var(--text-primary);
-            white-space: pre-wrap;
-            word-break: break-word;
-            margin-bottom: 24px;
-            padding-top: 4px;
-        }
-
-        .detail-content .detail-description {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            border-top: 1px solid var(--border);
-            padding-top: 20px;
-            margin-top: 4px;
-            font-style: italic;
-            letter-spacing: 0.02em;
-            line-height: 1.7;
-        }
-
-        .detail-content .detail-description::before {
-            content: "✧ ";
-            color: var(--accent-light);
-            font-style: normal;
-        }
-
-        /* ===== 加载状态 ===== */
-        .loading-state {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            flex-direction: column;
-            color: var(--text-light);
-            gap: 16px;
-            padding: 40px;
-        }
-        .loading-state .spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .loading-state p {
-            font-size: 0.95rem;
-            letter-spacing: 0.04em;
-        }
-
-        /* ===== 响应式 ===== */
-        @media (max-width: 820px) {
-            body {
-                padding: 12px;
-            }
-            .app {
-                max-height: none;
-                min-height: 90vh;
-                border-radius: var(--radius-sm);
-            }
-            .header {
-                padding: 18px 18px 12px 18px;
-            }
-            .header-title {
-                font-size: 1.4rem;
-            }
-            .header-title small {
-                font-size: 0.85rem;
-                margin-left: 6px;
-            }
-            .header-count {
-                font-size: 0.75rem;
-                padding: 2px 12px;
-            }
-
-            .main {
-                flex-direction: column;
-                height: auto;
-            }
-
-            .list-panel {
-                width: 100%;
-                min-width: unset;
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-                max-height: 240px;
-                flex-shrink: 0;
-            }
-            .list-panel .list-header {
-                padding: 10px 16px 8px 16px;
-                font-size: 0.75rem;
-            }
-            .chapter-toggle {
-                padding: 6px 16px 6px 16px;
-                font-size: 0.85rem;
-            }
-            .poem-sublist li {
-                padding: 5px 16px 5px 32px;
-                font-size: 0.85rem;
-            }
-
-            .detail-panel {
-                padding: 20px 18px 28px 18px;
-                min-height: 300px;
-                flex: 1;
-            }
-            .detail-content .detail-title {
-                font-size: 1.6rem;
-            }
-            .detail-content .detail-body {
-                font-size: 0.95rem;
-                line-height: 1.9;
-            }
-            .detail-content .detail-description {
-                font-size: 0.88rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 6px;
-            }
-            .header {
-                padding: 12px 12px 10px 12px;
-            }
-            .header-title {
-                font-size: 1.2rem;
-            }
-            .header-title small {
-                font-size: 0.75rem;
-                display: block;
-                margin-left: 0;
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-            }
-            .list-panel {
-                max-height: 180px;
-            }
-            .chapter-toggle {
-                padding: 5px 12px;
-                font-size: 0.8rem;
-            }
-            .poem-sublist li {
-                padding: 4px 12px 4px 24px;
-                font-size: 0.8rem;
-            }
-            .detail-panel {
-                padding: 16px 14px 24px 14px;
-            }
-            .detail-content .detail-title {
-                font-size: 1.3rem;
-            }
-            .detail-content .detail-body {
-                font-size: 0.9rem;
-                line-height: 1.8;
-            }
-        }
-    </style>
+    /* 响应式 */
+    @media (max-width: 820px) {
+      body { padding: 10px; }
+      .app { height: 95vh; min-height: 500px; }
+      .main { flex-direction: column; }
+      .list-panel {
+        width: 100%;
+        max-height: 220px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .detail-panel { padding: 18px 18px 28px 18px; }
+      .poem-card .card-title { font-size: 1.6rem; }
+    }
+  </style>
 </head>
 <body>
+<div class="app" id="app">
+  <header class="header">
+    <div class="header-title">诗集 <small>六章</small></div>
+    <div class="header-count" id="totalCount">共 0 首</div>
+  </header>
 
-    <div class="app" id="app">
-        <!-- 顶部 -->
-        <header class="header">
-            <div class="header-title">
-                诗集 <small>六章</small>
-            </div>
-            <div class="header-count" id="totalCount">共 0 首</div>
-        </header>
+  <div class="main">
+    <!-- 左侧目录区域 -->
+    <section class="list-panel" id="listPanel">
+      <div class="list-header">
+        <span>📂 目录</span>
+        <span id="listCount">0 首</span>
+      </div>
+      <ul class="tree-container" id="treeContainer">
+        <li class="empty-message">加载中...</li>
+      </ul>
+    </section>
 
-        <!-- 主体 -->
-        <div class="main">
-            <!-- 左侧边栏：可折叠目录树 -->
-            <section class="list-panel" id="listPanel">
-                <div class="list-header">
-                    <span>📂 目录</span>
-                    <span id="listCount">0 首</span>
-                </div>
-                <ul class="tree-container" id="treeContainer">
-                    <!-- 由 JS 动态生成 -->
-                </ul>
-            </section>
+    <!-- 右侧滚动区域：显示所有诗 -->
+    <section class="detail-panel" id="detailPanel">
+      <div class="loading-message">正在翻阅诗集…</div>
+    </section>
+  </div>
+</div>
 
-            <!-- 右侧详情 -->
-            <section class="detail-panel" id="detailPanel">
-                <!-- 由 JS 动态生成 -->
-            </section>
-        </div>
-    </div>
+<script>
+  (function() {
+    'use strict';
 
-    <script>
-        (function() {
-            'use strict';
+    // DOM 元素
+    const treeContainer = document.getElementById('treeContainer');
+    const detailPanel = document.getElementById('detailPanel');
+    const totalCountSpan = document.getElementById('totalCount');
+    const listCountSpan = document.getElementById('listCount');
 
-            // ===== DOM 引用 =====
-            const treeContainer = document.getElementById('treeContainer');
-            const detailPanel = document.getElementById('detailPanel');
-            const totalCount = document.getElementById('totalCount');
-            const listCount = document.getElementById('listCount');
+    // 数据状态
+    let allPoems = [];
+    let grouped = {};        // { chapterKey: [poems] }
+    let chapters = [];
+    let expandedState = {};  // 章节展开状态
+    let currentActiveIndex = null; // 当前高亮的诗歌索引 (用于目录高亮)
 
-            // ===== 状态 =====
-            let allPoems = [];
-            let grouped = {};
-            let chapters = [];
-            let expandedState = {}; // { chapterKey: true/false }
-            let selectedPoemIndex = null;
+    // 工具：章节中文映射
+    function getChapterLabel(chapter) {
+      if (typeof chapter === 'number') {
+        const map = ['一','二','三','四','五','六','七','八','九','十'];
+        return `第${map[chapter-1] || chapter}章`;
+      }
+      if (typeof chapter === 'string' && /^第.{1,2}章$/.test(chapter)) return chapter;
+      return String(chapter);
+    }
 
-            // ===== 工具函数 =====
-            function getChapterLabel(chapter) {
-                if (typeof chapter === 'number') {
-                    const map = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-                    return `第${map[chapter - 1] || chapter}章`;
-                }
-                if (typeof chapter === 'string' && /^第.{1,2}章$/.test(chapter)) {
-                    return chapter;
-                }
-                return String(chapter);
-            }
+    function getChapterSortKey(chapter) {
+      if (typeof chapter === 'number') return chapter;
+      const match = String(chapter).match(/(\d+)/);
+      if (match) return parseInt(match[1], 10);
+      const map = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
+      for (const [cn, num] of Object.entries(map)) {
+        if (String(chapter).includes(cn)) return num;
+      }
+      return 999;
+    }
 
-            function getChapterSortKey(chapter) {
-                if (typeof chapter === 'number') return chapter;
-                const match = String(chapter).match(/(\d+)/);
-                if (match) return parseInt(match[1], 10);
-                const map = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
-                for (const [cn, num] of Object.entries(map)) {
-                    if (String(chapter).includes(cn)) return num;
-                }
-                return 999;
-            }
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
-            function escapeHtml(str) {
-                if (!str) return '';
-                return String(str)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
-            }
+    // ========== 加载数据 ==========
+    async function loadPoetryData() {
+      try {
+        const response = await fetch('./poetry.jsonl');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const text = await response.text();
+        const lines = text.split('\n').filter(line => line.trim() !== '');
 
-            // ===== 加载数据 =====
-            async function loadData() {
-                try {
-                    const resp = await fetch('./poetry.jsonl');
-                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                    const text = await resp.text();
-                    const lines = text.split('\n').filter(line => line.trim() !== '');
-                    const poems = lines.map((line, idx) => {
-                        try {
-                            const obj = JSON.parse(line);
-                            return {
-                                title: obj.title || '无题',
-                                date: obj.date || '',
-                                content: obj.content || '',
-                                description: obj.description || '',
-                                chapter: obj.chapter !== undefined ? obj.chapter : 1,
-                                _index: idx,
-                            };
-                        } catch (e) {
-                            console.warn('第', idx + 1, '行解析失败:', line);
-                            return null;
-                        }
-                    }).filter(p => p !== null);
+        const poems = lines.map((line, idx) => {
+          try {
+            const obj = JSON.parse(line);
+            return {
+              title: obj.title || '无题',
+              date: obj.date || '',
+              content: obj.content || '',
+              description: obj.description || '',
+              chapter: obj.chapter !== undefined ? obj.chapter : 1,
+              _index: idx,
+            };
+          } catch (e) {
+            console.warn('解析错误行:', idx+1, line);
+            return null;
+          }
+        }).filter(p => p !== null);
 
-                    if (poems.length === 0) {
-                        throw new Error('未解析到任何诗歌数据');
-                    }
+        if (poems.length === 0) throw new Error('未找到有效诗歌');
 
-                    allPoems = poems;
+        allPoems = poems;
 
-                    const g = {};
-                    for (const p of allPoems) {
-                        const key = String(p.chapter);
-                        if (!g[key]) g[key] = [];
-                        g[key].push(p);
-                    }
-                    grouped = g;
+        // 分组
+        const g = {};
+        allPoems.forEach(p => {
+          const key = String(p.chapter);
+          if (!g[key]) g[key] = [];
+          g[key].push(p);
+        });
+        grouped = g;
 
-                    chapters = Object.keys(grouped).sort((a, b) => {
-                        return getChapterSortKey(a) - getChapterSortKey(b);
-                    });
+        chapters = Object.keys(grouped).sort((a,b) => getChapterSortKey(a) - getChapterSortKey(b));
 
-                    // 初始化展开状态：默认全部展开
-                    for (const ch of chapters) {
-                        expandedState[ch] = true;
-                    }
+        // 默认全部展开
+        chapters.forEach(ch => { expandedState[ch] = true; });
 
-                    totalCount.textContent = `共 ${allPoems.length} 首`;
+        // 更新UI计数
+        totalCountSpan.textContent = `共 ${allPoems.length} 首`;
+        listCountSpan.textContent = `${allPoems.length} 首`;
 
-                    renderTree();
-                    // 默认选中第一首诗
-                    if (allPoems.length > 0) {
-                        selectPoem(allPoems[0]._index);
-                    } else {
-                        showEmptyState();
-                    }
+        // 渲染目录和右侧所有诗歌卡片
+        renderDirectoryTree();
+        renderAllPoemsInDetail();
 
-                } catch (err) {
-                    console.error('加载失败:', err);
-                    detailPanel.innerHTML = `
-                        <div class="placeholder" style="padding:40px 20px;">
-                            <div class="icon">📭</div>
-                            <p style="font-size:1rem;color:#b5a89a;">加载数据失败</p>
-                            <p style="font-size:0.85rem;color:#ccc;margin-top:6px;">${err.message}</p>
-                            <p style="font-size:0.8rem;color:#ddd;margin-top:12px;">请确保 poems.jsonl 文件位于同一目录下</p>
-                        </div>
-                    `;
-                    treeContainer.innerHTML = `<li class="empty-msg">数据加载失败</li>`;
-                    totalCount.textContent = '共 0 首';
-                    listCount.textContent = '0 首';
-                }
-            }
+        // 默认高亮第一首诗 (目录和滚动位置)
+        if (allPoems.length > 0) {
+          setActivePoem(allPoems[0]._index, false); // 不高亮滚动干扰，但设置高亮
+        }
+      } catch (error) {
+        console.error(error);
+        detailPanel.innerHTML = `<div class="empty-message">❌ 加载失败：${error.message}<br><small>请确认 poetry.jsonl 存在</small></div>`;
+        treeContainer.innerHTML = `<li class="empty-message">数据错误</li>`;
+        totalCountSpan.textContent = '共 0 首';
+        listCountSpan.textContent = '0 首';
+      }
+    }
 
-            // ===== 渲染侧边栏目录树 =====
-            function renderTree() {
-                if (!chapters.length) {
-                    treeContainer.innerHTML = `<li class="empty-msg">暂无章节</li>`;
-                    listCount.textContent = '0 首';
-                    return;
-                }
+    // ========== 渲染左侧目录 (保持折叠功能) ==========
+    function renderDirectoryTree() {
+      if (!chapters.length) {
+        treeContainer.innerHTML = '<li class="empty-message">暂无章节</li>';
+        return;
+      }
 
-                const frag = document.createDocumentFragment();
+      const frag = document.createDocumentFragment();
 
-                for (const ch of chapters) {
-                    const poems = grouped[ch] || [];
-                    const label = getChapterLabel(ch);
-                    const isExpanded = expandedState[ch] !== false; // 默认展开
+      chapters.forEach(ch => {
+        const poems = grouped[ch] || [];
+        const label = getChapterLabel(ch);
+        const isExpanded = expandedState[ch] !== false;
 
-                    // 章节容器
-                    const chapterItem = document.createElement('li');
-                    chapterItem.className = 'chapter-item';
+        const chapterItem = document.createElement('li');
+        chapterItem.className = 'chapter-item';
 
-                    // 章节标题
-                    const toggle = document.createElement('div');
-                    toggle.className = 'chapter-toggle';
-                    toggle.dataset.chapter = ch;
-                    toggle.innerHTML = `
-                        <span class="arrow ${isExpanded ? 'expanded' : ''}">▸</span>
-                        <span class="chapter-label">${escapeHtml(label)}</span>
-                        <span class="chapter-badge">${poems.length}</span>
-                    `;
-                    toggle.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleChapter(ch);
-                    });
+        const toggleDiv = document.createElement('div');
+        toggleDiv.className = 'chapter-toggle';
+        toggleDiv.dataset.chapter = ch;
+        toggleDiv.innerHTML = `
+          <span class="arrow ${isExpanded ? 'expanded' : ''}">▸</span>
+          <span class="chapter-label">${escapeHtml(label)}</span>
+          <span class="chapter-badge">${poems.length}</span>
+        `;
+        toggleDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleChapterCollapse(ch);
+        });
 
-                    // 诗歌子列表
-                    const subList = document.createElement('ul');
-                    subList.className = `poem-sublist ${isExpanded ? '' : 'hidden'}`;
-                    subList.dataset.chapter = ch;
+        const subList = document.createElement('ul');
+        subList.className = `poem-sublist ${isExpanded ? '' : 'hidden'}`;
+        subList.dataset.chapter = ch;
 
-                    if (poems.length === 0) {
-                        const emptyLi = document.createElement('li');
-                        emptyLi.textContent = '（暂无诗歌）';
-                        emptyLi.style.color = 'var(--text-light)';
-                        emptyLi.style.fontStyle = 'italic';
-                        emptyLi.style.cursor = 'default';
-                        emptyLi.style.paddingLeft = '44px';
-                        subList.appendChild(emptyLi);
-                    } else {
-                        for (const p of poems) {
-                            const li = document.createElement('li');
-                            li.dataset.index = p._index;
-                            li.innerHTML = `
-                                <span class="poem-title">${escapeHtml(p.title)}</span>
-                                <span class="poem-date-mini">${p.date || ''}</span>
-                            `;
-                            li.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                selectPoem(p._index);
-                            });
-                            subList.appendChild(li);
-                        }
-                    }
-
-                    chapterItem.appendChild(toggle);
-                    chapterItem.appendChild(subList);
-                    frag.appendChild(chapterItem);
-                }
-
-                treeContainer.innerHTML = '';
-                treeContainer.appendChild(frag);
-
-                // 更新总诗数
-                listCount.textContent = `${allPoems.length} 首`;
-
-                // 高亮当前选中的诗歌
-                highlightSelectedPoem();
-            }
-
-            // ===== 切换章节折叠 =====
-            function toggleChapter(chapterKey) {
-                const current = expandedState[chapterKey];
-                expandedState[chapterKey] = !current;
-
-                // 更新 DOM 中的子列表和箭头
-                const subList = treeContainer.querySelector(`.poem-sublist[data-chapter="${chapterKey}"]`);
-                const toggle = treeContainer.querySelector(`.chapter-toggle[data-chapter="${chapterKey}"]`);
-                if (subList) {
-                    subList.classList.toggle('hidden');
-                }
-                if (toggle) {
-                    const arrow = toggle.querySelector('.arrow');
-                    if (arrow) {
-                        arrow.classList.toggle('expanded');
-                    }
-                }
-            }
-
-            // ===== 选中诗歌 =====
-            function selectPoem(index) {
-                const poem = allPoems.find(p => p._index === index);
-                if (!poem) return;
-
-                selectedPoemIndex = index;
-                highlightSelectedPoem();
-                renderDetail(poem);
-
-                // 确保父章节展开
-                const chapterKey = String(poem.chapter);
-                if (expandedState[chapterKey] === false) {
-                    // 展开该章节
-                    expandedState[chapterKey] = true;
-                    const subList = treeContainer.querySelector(`.poem-sublist[data-chapter="${chapterKey}"]`);
-                    const toggle = treeContainer.querySelector(`.chapter-toggle[data-chapter="${chapterKey}"]`);
-                    if (subList) subList.classList.remove('hidden');
-                    if (toggle) {
-                        const arrow = toggle.querySelector('.arrow');
-                        if (arrow) arrow.classList.add('expanded');
-                    }
-                }
-            }
-
-            // ===== 高亮当前选中的诗歌 =====
-            function highlightSelectedPoem() {
-                // 移除所有高亮
-                treeContainer.querySelectorAll('.poem-sublist li').forEach(li => {
-                    li.classList.remove('active');
-                });
-
-                if (selectedPoemIndex !== null) {
-                    const target = treeContainer.querySelector(`.poem-sublist li[data-index="${selectedPoemIndex}"]`);
-                    if (target) {
-                        target.classList.add('active');
-                        // 滚动到可见区域
-                        target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                    }
-                }
-            }
-
-            // ===== 渲染详情 =====
-            function renderDetail(poem) {
-                const hasDesc = poem.description && poem.description.trim() !== '';
-
-                detailPanel.innerHTML = `
-                    <div class="detail-content">
-                        <div class="detail-title">${escapeHtml(poem.title)}</div>
-                        ${poem.date ? `<div class="detail-date">${escapeHtml(poem.date)}</div>` : ''}
-                        <div class="detail-body">${escapeHtml(poem.content)}</div>
-                        ${hasDesc ? `<div class="detail-description">${escapeHtml(poem.description)}</div>` : ''}
-                    </div>
-                `;
-            }
-
-            // ===== 空状态 =====
-            function showEmptyState() {
-                detailPanel.innerHTML = `
-                    <div class="placeholder">
-                        <div class="icon">📭</div>
-                        <p>暂无诗歌数据</p>
-                    </div>
-                `;
-                treeContainer.innerHTML = `<li class="empty-msg">暂无诗歌</li>`;
-                listCount.textContent = '0 首';
-            }
-
-            // ===== 初始化 =====
-            detailPanel.innerHTML = `
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p>正在载入诗集 …</p>
-                </div>
+        if (poems.length === 0) {
+          const emptyLi = document.createElement('li');
+          emptyLi.textContent = '（暂无诗歌）';
+          emptyLi.style.color = '#9a8e84';
+          emptyLi.style.fontStyle = 'italic';
+          emptyLi.style.cursor = 'default';
+          emptyLi.style.paddingLeft = '38px';
+          subList.appendChild(emptyLi);
+        } else {
+          poems.forEach(p => {
+            const li = document.createElement('li');
+            li.dataset.poemIndex = p._index;
+            li.innerHTML = `
+              <span class="poem-title">${escapeHtml(p.title)}</span>
+              <span class="poem-date-mini">${p.date || ''}</span>
             `;
-            treeContainer.innerHTML = `<li class="empty-msg">加载中...</li>`;
+            li.addEventListener('click', (e) => {
+              e.stopPropagation();
+              // 点击目录项：跳转到右侧对应诗歌卡片
+              scrollToPoemCard(p._index);
+              setActivePoem(p._index, true);
+            });
+            subList.appendChild(li);
+          });
+        }
 
-            loadData();
+        chapterItem.appendChild(toggleDiv);
+        chapterItem.appendChild(subList);
+        frag.appendChild(chapterItem);
+      });
 
-        })();
-    </script>
+      treeContainer.innerHTML = '';
+      treeContainer.appendChild(frag);
+      applyActiveHighlight();
+    }
 
+    // 折叠/展开章节
+    function toggleChapterCollapse(chapterKey) {
+      expandedState[chapterKey] = !expandedState[chapterKey];
+      const subList = treeContainer.querySelector(`.poem-sublist[data-chapter="${chapterKey}"]`);
+      const toggle = treeContainer.querySelector(`.chapter-toggle[data-chapter="${chapterKey}"]`);
+      if (subList) subList.classList.toggle('hidden');
+      if (toggle) {
+        const arrow = toggle.querySelector('.arrow');
+        if (arrow) arrow.classList.toggle('expanded');
+      }
+    }
+
+    // ========== 右侧：渲染所有诗歌卡片 (滚动显示全部) ==========
+    function renderAllPoemsInDetail() {
+      if (!allPoems.length) {
+        detailPanel.innerHTML = `<div class="empty-message">📭 暂无诗歌</div>`;
+        return;
+      }
+
+      let html = '';
+      allPoems.forEach(p => {
+        const hasDesc = p.description && p.description.trim() !== '';
+        html += `
+          <div class="poem-card" id="poem-${p._index}" data-poem-index="${p._index}">
+            <div class="card-title">${escapeHtml(p.title)}</div>
+            ${p.date ? `<div class="card-date">${escapeHtml(p.date)}</div>` : ''}
+            <div class="card-body">${escapeHtml(p.content)}</div>
+            ${hasDesc ? `<div class="card-description">${escapeHtml(p.description)}</div>` : ''}
+          </div>
+        `;
+      });
+
+      detailPanel.innerHTML = html;
+    }
+
+    // 滚动到指定诗歌卡片 (id定位)
+    function scrollToPoemCard(index) {
+      const card = document.getElementById(`poem-${index}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        // 回退：通过detailPanel查找
+        const target = detailPanel.querySelector(`.poem-card[data-poem-index="${index}"]`);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // 设置当前激活的诗歌 (高亮目录项)
+    function setActivePoem(index, shouldScrollIntoView = false) {
+      if (currentActiveIndex === index) {
+        // 如果已经激活，但仍然可能需要滚动目录可见
+        if (shouldScrollIntoView) {
+          const activeLi = treeContainer.querySelector(`li[data-poem-index="${index}"]`);
+          if (activeLi) activeLi.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+        return;
+      }
+
+      currentActiveIndex = index;
+      applyActiveHighlight();
+
+      // 确保对应章节展开
+      const poem = allPoems.find(p => p._index === index);
+      if (poem) {
+        const chKey = String(poem.chapter);
+        if (expandedState[chKey] === false) {
+          expandedState[chKey] = true;
+          const subList = treeContainer.querySelector(`.poem-sublist[data-chapter="${chKey}"]`);
+          const toggle = treeContainer.querySelector(`.chapter-toggle[data-chapter="${chKey}"]`);
+          if (subList) subList.classList.remove('hidden');
+          if (toggle) {
+            const arrow = toggle.querySelector('.arrow');
+            if (arrow) arrow.classList.add('expanded');
+          }
+        }
+      }
+
+      // 目录中高亮条目滚动到可见
+      if (shouldScrollIntoView) {
+        const activeLi = treeContainer.querySelector(`li[data-poem-index="${index}"]`);
+        if (activeLi) {
+          activeLi.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }
+    }
+
+    function applyActiveHighlight() {
+      // 移除所有active类
+      treeContainer.querySelectorAll('li[data-poem-index]').forEach(li => li.classList.remove('active'));
+      if (currentActiveIndex !== null) {
+        const activeLi = treeContainer.querySelector(`li[data-poem-index="${currentActiveIndex}"]`);
+        if (activeLi) activeLi.classList.add('active');
+      }
+    }
+
+    // 监听右侧滚动，自动更新左侧目录高亮 (交叉观察简化版：使用滚动检测最近卡片)
+    function setupScrollSpy() {
+      const panel = detailPanel;
+      if (!panel) return;
+
+      panel.addEventListener('scroll', () => {
+        if (!allPoems.length) return;
+        const cards = panel.querySelectorAll('.poem-card');
+        if (!cards.length) return;
+
+        const panelRect = panel.getBoundingClientRect();
+        let closestIndex = null;
+        let minDistance = Infinity;
+
+        cards.forEach(card => {
+          const index = parseInt(card.dataset.poemIndex, 10);
+          const rect = card.getBoundingClientRect();
+          // 卡片顶部相对于面板顶部的距离
+          const cardTopRelativeToPanel = rect.top - panelRect.top;
+          // 选择卡片顶部在面板上方(已滚过)或刚好在可视区域上方的最近一个
+          if (cardTopRelativeToPanel <= 150) { // 阈值150px
+            const distance = Math.abs(cardTopRelativeToPanel);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestIndex = index;
+            }
+          }
+        });
+
+        // 如果没找到(滚动到最顶部)，选第一个
+        if (closestIndex === null && cards.length > 0) {
+          closestIndex = parseInt(cards[0].dataset.poemIndex, 10);
+        }
+
+        if (closestIndex !== null && closestIndex !== currentActiveIndex) {
+          setActivePoem(closestIndex, false);
+        }
+      }, { passive: true });
+    }
+
+    // 窗口大小变化或初始化完成后启动监听
+    window.addEventListener('load', () => {
+      setupScrollSpy();
+    });
+
+    // 数据加载完成后也调用
+    async function init() {
+      detailPanel.innerHTML = `<div class="loading-message"><div style="margin-bottom:8px;">⏳</div>载入诗集…</div>`;
+      await loadPoetryData();
+      setupScrollSpy();
+    }
+
+    init();
+
+  })();
+</script>
 </body>
 </html>
