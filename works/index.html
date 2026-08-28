@@ -786,6 +786,7 @@
 
                     if (allPoems.length > 0) {
                         setActivePoem(allPoems[0]._index, false);
+                        // 初始加载时设置背景
                         updateBackgroundForPoem(allPoems[0]);
                     }
                 } catch (error) {
@@ -846,6 +847,7 @@
                             `;
                             li.addEventListener('click', (e) => {
                                 e.stopPropagation();
+                                // 点击左侧目录仅滚动到对应诗歌，不切换背景
                                 scrollToPoemCard(p._index);
                                 setActivePoem(p._index, true);
                             });
@@ -928,7 +930,8 @@
                             if (arrow) arrow.classList.add('expanded');
                         }
                     }
-                    updateBackgroundForPoem(poem);
+                    // 注意：这里不再调用 updateBackgroundForPoem
+                    // 背景切换仅由右侧滚动区域的 scrollSpy 触发
                 }
 
                 if (shouldScrollIntoView) {
@@ -972,6 +975,11 @@
                     }
                     if (closestIndex !== null && closestIndex !== currentActiveIndex) {
                         setActivePoem(closestIndex, false);
+                        // 仅当滚动触发的诗歌变化时才切换背景
+                        const poem = allPoems.find(p => p._index === closestIndex);
+                        if (poem) {
+                            updateBackgroundForPoem(poem);
+                        }
                     }
                 }, { passive: true });
             }
