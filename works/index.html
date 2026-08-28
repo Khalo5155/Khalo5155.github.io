@@ -894,21 +894,21 @@
                 detailPanel.innerHTML = html;
 
                 // 新增：为每个 poem-card 添加点击事件监听器
-                detailPanel.querySelectorAll('.poem-card').forEach(card => {
-                    card.addEventListener('click', function(e) {
-                        // 如果点击的是卡片内部，但目标是卡片本身或者子元素，都触发跳转
-                        // 但避免与可能的文字选择冲突，使用 closest 确保点击在卡片内任意位置
-                        const clickedCard = e.target.closest('.poem-card');
-                        if (!clickedCard) return;
-                        const index = parseInt(clickedCard.dataset.poemIndex, 10);
-                        if (!isNaN(index)) {
-                            // 滚动到对应的诗（即卡片本身）
-                            scrollToPoemCard(index);
-                            // 同时更新目录高亮
-                            setActivePoem(index, false); // 不强制滚动目录，避免跳动
-                        }
-                    });
-                });
+                // detailPanel.querySelectorAll('.poem-card').forEach(card => {
+                //     card.addEventListener('click', function(e) {
+                //         // 如果点击的是卡片内部，但目标是卡片本身或者子元素，都触发跳转
+                //         // 但避免与可能的文字选择冲突，使用 closest 确保点击在卡片内任意位置
+                //         const clickedCard = e.target.closest('.poem-card');
+                //         if (!clickedCard) return;
+                //         const index = parseInt(clickedCard.dataset.poemIndex, 10);
+                //         if (!isNaN(index)) {
+                //             // 滚动到对应的诗（即卡片本身）
+                //             scrollToPoemCard(index);
+                //             // 同时更新目录高亮
+                //             setActivePoem(index, false); // 不强制滚动目录，避免跳动
+                //         }
+                //     });
+                // });
             }
 
             function scrollToPoemCard(index) {
